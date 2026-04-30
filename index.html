@@ -14,6 +14,16 @@
             overscroll-behavior: none;
             font-family: 'Courier New', Courier, monospace;
             color: #fff;
+            /* เพิ่มระบบป้องกันการคลุมดำข้อความและภาพ */
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* เพิ่มระบบป้องกันการลากรูปภาพและการโต้ตอบกับรูปภาพโดยตรง */
+        img {
+            -webkit-user-drag: none;
+            pointer-events: none; 
         }
 
         .app-wrapper {
@@ -422,6 +432,12 @@
     </div>
 
     <script>
+        // ป้องกันการคลิกขวา (Right Click) ทั่วทั้งหน้าเว็บ
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        
+        // ป้องกันการลากคลุมหรือลากรูปภาพ (Drag Start)
+        document.addEventListener('dragstart', event => event.preventDefault());
+
         function setupGlitchLayers(src) {
             const layers = document.querySelectorAll('.glitch-layer');
             layers.forEach(layer => { layer.style.backgroundImage = `url('${src}')`; });
