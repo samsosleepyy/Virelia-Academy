@@ -199,6 +199,7 @@
         /* แถบเมนูด้านบน */
         .top-bar {
             display: flex; justify-content: flex-end; gap: 20px;
+            flex-wrap: wrap; /* เพิ่ม: อนุญาตให้ปุ่มขึ้นบรรทัดใหม่ได้ */
             padding-bottom: 20px; border-bottom: 1px solid rgba(255, 51, 51, 0.3);
             margin-left: 100px; /* เว้นที่ให้โลโก้ */
         }
@@ -209,6 +210,7 @@
             cursor: pointer; text-transform: uppercase;
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
             transition: all 0.3s;
+            white-space: nowrap; flex-shrink: 0; /* เพิ่ม: ป้องกันปุ่มหดตัวบีบข้อความจนพัง */
         }
         .nav-btn:hover, .nav-btn.active {
             background: rgba(255, 51, 51, 0.2); text-shadow: 0 0 5px #ff3333; box-shadow: 0 0 10px inset rgba(255,51,51,0.5);
@@ -217,10 +219,11 @@
         /* แถบเมนูย่อย (ห้อง) */
         .sub-bar {
             display: flex; justify-content: flex-end; gap: 15px;
+            flex-wrap: wrap; /* เพิ่ม: ดันปุ่มลงบรรทัดถัดไปเมื่อที่พอไม่พอ */
             padding: 15px 0; max-height: 0; overflow: hidden; opacity: 0;
             transition: max-height 0.4s ease, opacity 0.4s ease;
         }
-        .sub-bar.active { max-height: 100px; opacity: 1; }
+        .sub-bar.active { max-height: 300px; opacity: 1; } /* แก้ไข: ขยาย max-height เผื่อปุ่มหล่นลงมาหลายบรรทัด */
 
         /* ปุ่มสีตามห้อง */
         .room-btn {
@@ -229,6 +232,7 @@
             cursor: pointer; text-transform: uppercase;
             clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
             transition: all 0.2s;
+            white-space: nowrap; flex-shrink: 0; /* เพิ่ม: ป้องกันปุ่มห้องหดตัวบีบข้อความจนพัง */
         }
         .room-btn:hover, .room-btn.active {
             background: var(--r-bg); box-shadow: 0 0 10px var(--r-color); text-shadow: 0 0 3px #fff; color: #fff;
@@ -341,6 +345,24 @@
         #btn-b { --r-color: #AAAAAA; --r-bg: rgba(170, 170, 170, 0.2); }
         #btn-c { --r-color: #00FFFF; --r-bg: rgba(0, 255, 255, 0.2); }
         #btn-d { --r-color: #00FF00; --r-bg: rgba(0, 255, 0, 0.2); }
+
+        /* -------------------------------------------
+           RESPONSIVE (รองรับการแสดงผลบนมือถือ)
+           ------------------------------------------- */
+        @media (max-width: 768px) {
+            .system-ui { padding: 20px 15px; }
+            .top-bar { margin-left: 60px; justify-content: center; gap: 10px; }
+            .nav-btn { padding: 8px 15px; font-size: 1rem; }
+            
+            .sub-bar { justify-content: center; gap: 10px; } /* บนมือถือจัดปุ่มห้องให้อยู่ตรงกลาง */
+            .room-btn { padding: 6px 15px; font-size: 0.9rem; }
+            
+            /* ปรับหน้าต่างรายละเอียด (Modal) เมื่อเป็นจอมือถือ */
+            .modal-box { flex-direction: column; max-height: 85vh; overflow-y: auto; padding: 20px; }
+            .modal-left { width: 100%; max-width: 150px; margin: 0 auto; }
+            .modal-right { width: 100%; }
+            .modal-name { font-size: 1.5rem; text-align: center; }
+        }
 
     </style>
 </head>
