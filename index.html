@@ -11,8 +11,17 @@
             width: 100%; height: 100%;
             background-color: #050505;
             overflow: hidden;
+            overscroll-behavior: none; /* ป้องกันการเลื่อนหน้าจอบนมือถือ */
             font-family: 'Courier New', Courier, monospace;
             color: #fff;
+        }
+
+        /* คอนเทนเนอร์หลักสำหรับล็อคขนาดหน้าจอไม่ให้ขยายตามอนิเมชัน */
+        .app-wrapper {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
         }
 
         /* -------------------------------------------
@@ -122,7 +131,14 @@
                         left 1.5s cubic-bezier(0.25, 1, 0.5, 1), 
                         transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 50;
+            opacity: 0; /* ซ่อนไว้ก่อนเริ่มต้น */
+            animation: show-logo 0.5s 0.8s forwards; /* ค่อยๆ ปรากฏขึ้นมาในวินาทีที่ 0.8 (หลังจอขาวเต็มที่) */
         }
+        
+        @keyframes show-logo {
+            to { opacity: 1; }
+        }
+
         .logo-mover.corner-mode {
             top: 70px; left: 70px;
             transform: translate(-50%, -50%) scale(0.15); /* ย่อให้เล็กลงอีกนิดเพื่อไม่บังเมนู */
@@ -330,11 +346,11 @@
 </head>
 <body class="screen-flicker">
 
-    <!-- GLOBAL EFFECTS -->
-    <div class="noise"></div>
-    <div class="scanlines"></div>
-    <div class="scanline-moving"></div>
-    <div class="vignette"></div>
+    <!-- ห่อหุ้มทุกอย่างด้วย app-wrapper เพื่อกันไม่ให้อนิเมชันดันหน้าจอจนเกิดแถบ Scrollbar -->
+    <div class="app-wrapper">
+
+        <!-- GLOBAL EFFECTS -->
+        <div class="noise"></div>
 
     <!-- SCREEN 1: START -->
     <div id="start-screen" class="start-screen">
@@ -378,28 +394,28 @@
                 <!-- ข้อมูลจะถูก render ด้วย JavaScript ที่นี่ -->
             </div>
         </div>
-    </div>
-
-    <!-- MODAL รายละเอียด -->
-    <div class="modal-overlay" id="detail-modal">
-        <div class="modal-box" id="modal-content">
-            <button class="modal-close" id="close-modal">[X]</button>
-            <div class="modal-left">
-                <img id="m-img" src="" alt="Profile">
-            </div>
-            <div class="modal-right">
-                <h2 class="modal-name" id="m-name">NAME</h2>
-                <div class="modal-info">
-                    <p><span>ระดับชั้น:</span> <span id="m-room" style="color:inherit"></span></p>
-                    <p><span>รหัสนักเรียน:</span> <span id="m-id" style="color:inherit"></span></p>
-                    <p><span>สถานะ:</span> ยืนยันตัวตนแล้ว (ACTIVE)</p>
-                    <br>
-                    <p><span>ข้อมูลเพิ่มเติม:</span></p>
-                    <p id="m-desc">ระบบกำลังดึงข้อมูลจากส่วนกลาง...</p>
+        <!-- MODAL รายละเอียด -->
+        <div class="modal-overlay" id="detail-modal">
+            <div class="modal-box" id="modal-content">
+                <button class="modal-close" id="close-modal">[X]</button>
+                <div class="modal-left">
+                    <img id="m-img" src="" alt="Profile">
+                </div>
+                <div class="modal-right">
+                    <h2 class="modal-name" id="m-name">NAME</h2>
+                    <div class="modal-info">
+                        <p><span>ระดับชั้น:</span> <span id="m-room" style="color:inherit"></span></p>
+                        <p><span>รหัสนักเรียน:</span> <span id="m-id" style="color:inherit"></span></p>
+                        <p><span>สถานะ:</span> ยืนยันตัวตนแล้ว (ACTIVE)</p>
+                        <br>
+                        <p><span>ข้อมูลเพิ่มเติม:</span></p>
+                        <p id="m-desc">ระบบกำลังดึงข้อมูลจากส่วนกลาง...</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+    </div> <!-- ปิด app-wrapper -->
 
     <script>
         // ฐานข้อมูลจำลอง (Mock Data) สำหรับนักเรียนแต่ละห้อง
