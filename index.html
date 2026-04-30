@@ -11,12 +11,11 @@
             width: 100%; height: 100%;
             background-color: #050505;
             overflow: hidden;
-            overscroll-behavior: none; /* ป้องกันการเลื่อนหน้าจอบนมือถือ */
+            overscroll-behavior: none;
             font-family: 'Courier New', Courier, monospace;
             color: #fff;
         }
 
-        /* คอนเทนเนอร์หลักสำหรับล็อคขนาดหน้าจอไม่ให้ขยายตามอนิเมชัน */
         .app-wrapper {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -123,7 +122,6 @@
             100% { transform: translate(-50%, -50%) scale(1, 1); background-color: transparent; opacity: 0; visibility: hidden; }
         }
 
-        /* โลโก้ */
         .logo-mover {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(1);
@@ -131,17 +129,14 @@
                         left 1.5s cubic-bezier(0.25, 1, 0.5, 1), 
                         transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 50;
-            opacity: 0; /* ซ่อนไว้ก่อนเริ่มต้น */
-            animation: show-logo 0.5s 0.8s forwards; /* ค่อยๆ ปรากฏขึ้นมาในวินาทีที่ 0.8 (หลังจอขาวเต็มที่) */
+            opacity: 0; 
+            animation: show-logo 0.5s 0.8s forwards;
         }
-        
-        @keyframes show-logo {
-            to { opacity: 1; }
-        }
+        @keyframes show-logo { to { opacity: 1; } }
 
         .logo-mover.corner-mode {
             top: 70px; left: 70px;
-            transform: translate(-50%, -50%) scale(0.15); /* ย่อให้เล็กลงอีกนิดเพื่อไม่บังเมนู */
+            transform: translate(-50%, -50%) scale(0.15);
         }
 
         .glitch-wrapper { position: relative; display: block; width: 450px; aspect-ratio: 1 / 1; }
@@ -173,7 +168,6 @@
             opacity: 0.7; transform: translate(8px, -3px); mix-blend-mode: screen; filter: hue-rotate(-90deg) saturate(3);
             animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
         }
-
         @keyframes glitch-anim-1 {
             0% { clip-path: inset(20% 0 80% 0); transform: translate(-8px, 1px); }
             50% { clip-path: inset(40% 0 50% 0); transform: translate(8px, -2px); }
@@ -196,13 +190,10 @@
         }
         .system-ui.visible { opacity: 1; pointer-events: auto; }
 
-        /* แถบเมนูด้านบน */
         .top-bar {
-            display: flex; justify-content: flex-end; gap: 20px;
-            flex-wrap: wrap; /* เพิ่ม: อนุญาตให้ปุ่มขึ้นบรรทัดใหม่ได้ */
+            display: flex; justify-content: flex-end; gap: 20px; flex-wrap: wrap; 
             padding-bottom: 20px; border-bottom: 1px solid rgba(255, 51, 51, 0.3);
-            margin-left: 100px; /* เว้นที่ให้โลโก้ */
-            flex-shrink: 0; /* แก้ไข: ป้องกันไม่ให้แถบเมนูโดนบีบความสูง */
+            margin-left: 100px; flex-shrink: 0; 
         }
 
         .nav-btn {
@@ -210,36 +201,27 @@
             padding: 10px 30px; font-family: inherit; font-size: 1.2rem; font-weight: bold;
             cursor: pointer; text-transform: uppercase;
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.3s;
-            white-space: nowrap; flex-shrink: 0; /* เพิ่ม: ป้องกันปุ่มหดตัวบีบข้อความจนพัง */
+            transition: all 0.3s; white-space: nowrap; flex-shrink: 0; 
         }
         .nav-btn:hover, .nav-btn.active {
             background: rgba(255, 51, 51, 0.2); text-shadow: 0 0 5px #ff3333; box-shadow: 0 0 10px inset rgba(255,51,51,0.5);
         }
 
-        /* แถบเมนูย่อย (ห้อง) */
         .sub-bar {
-            display: flex; justify-content: flex-end; gap: 15px;
-            flex-wrap: wrap; /* เพิ่ม: ดันปุ่มลงบรรทัดถัดไปเมื่อที่พอไม่พอ */
-            padding: 0; max-height: 0; overflow: hidden; opacity: 0; /* แก้ไข: เอา padding ออกเวลาปิด เพื่อไม่ให้กินพื้นที่ */
-            transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
-            flex-shrink: 0; /* แก้ไข: ป้องกันไม่ให้แถบเมนูย่อยโดนบีบความสูงจนปุ่มหาย */
+            display: flex; justify-content: flex-end; gap: 15px; flex-wrap: wrap; 
+            padding: 0; max-height: 0; overflow: hidden; opacity: 0; 
+            transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease; flex-shrink: 0; 
         }
         .sub-bar.active { 
-            max-height: 400px; 
-            opacity: 1; 
-            padding: 15px 0; 
-            overflow: visible; /* แก้ไข: เมื่อเปิดแล้วอนุญาตให้แสดงทะลุกรอบได้เพื่อกันปุ่ม/เงาโดนตัด */
+            max-height: 400px; opacity: 1; padding: 15px 0; overflow: visible; 
         } 
 
-        /* ปุ่มสีตามห้อง */
         .room-btn {
             background: transparent; padding: 8px 25px; border: 1px solid var(--r-color);
             color: var(--r-color); font-family: inherit; font-size: 1rem; font-weight: bold;
             cursor: pointer; text-transform: uppercase;
             clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-            transition: all 0.2s;
-            white-space: nowrap; flex-shrink: 0; /* เพิ่ม: ป้องกันปุ่มห้องหดตัวบีบข้อความจนพัง */
+            transition: all 0.2s; white-space: nowrap; flex-shrink: 0; 
         }
         .room-btn:hover, .room-btn.active {
             background: var(--r-bg); box-shadow: 0 0 10px var(--r-color); text-shadow: 0 0 3px #fff; color: #fff;
@@ -249,19 +231,15 @@
         .content-area {
             flex-grow: 1; margin-top: 20px; overflow-y: auto;
             display: flex; justify-content: center; align-items: flex-start; gap: 40px;
-            flex-wrap: wrap; padding: 20px;
-            /* ซ่อน Scrollbar สไตล์ CRT */
-            scrollbar-width: thin; scrollbar-color: #ff3333 #000;
+            flex-wrap: wrap; padding: 20px; scrollbar-width: thin; scrollbar-color: #ff3333 #000;
         }
         .content-area::-webkit-scrollbar { width: 8px; }
         .content-area::-webkit-scrollbar-track { background: #000; }
         .content-area::-webkit-scrollbar-thumb { background: #ff3333; }
 
-        /* การ์ดโปรไฟล์ */
         .profile-card {
-            width: 240px; display: flex; flex-direction: column;
-            background: rgba(10, 10, 10, 0.8);
-            border: 2px solid var(--theme-color, #ff3333);
+            width: 220px; display: flex; flex-direction: column;
+            background: rgba(10, 10, 10, 0.8); border: 2px solid var(--theme-color, #ff3333);
             box-shadow: 0 0 15px rgba(0,0,0,0.5), 0 0 10px inset var(--theme-glow, rgba(255,51,51,0.2));
             padding: 15px; position: relative;
             animation: card-appear 0.5s ease-out forwards; opacity: 0; transform: translateY(20px);
@@ -278,15 +256,13 @@
 
         .profile-img-container {
             width: 100%; aspect-ratio: 3/4; overflow: hidden;
-            border: 1px solid var(--theme-color); margin-bottom: 15px;
-            position: relative;
+            border: 1px solid var(--theme-color); margin-bottom: 15px; position: relative;
         }
         .profile-img {
             width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.5) contrast(1.2);
             transition: filter 0.3s;
         }
         .profile-card:hover .profile-img { filter: grayscale(0) contrast(1.1); }
-        /* สแกนไลน์บนภาพโปรไฟล์ */
         .profile-img-container::after {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.2) 3px, rgba(0,0,0,0.2) 4px);
@@ -294,8 +270,9 @@
         }
 
         .profile-name {
-            font-size: 1.1rem; font-weight: bold; text-align: center; margin-bottom: 15px;
-            color: var(--theme-color); text-transform: uppercase; letter-spacing: 2px;
+            font-size: 1rem; font-weight: bold; text-align: center; margin-bottom: 15px;
+            color: var(--theme-color); text-transform: uppercase; letter-spacing: 1px;
+            min-height: 40px; display: flex; align-items: center; justify-content: center;
         }
 
         .detail-btn {
@@ -318,10 +295,13 @@
 
         .modal-box {
             background: #0a0a0a; border: 2px solid var(--theme-color, #fff);
-            width: 600px; max-width: 90%; max-height: 80vh; padding: 30px;
+            width: 750px; max-width: 90%; max-height: 85vh; padding: 30px;
             position: relative; box-shadow: 0 0 30px var(--theme-glow, rgba(255,255,255,0.2));
-            display: flex; gap: 20px;
+            display: flex; gap: 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--theme-color) #000;
         }
+        .modal-box::-webkit-scrollbar { width: 8px; }
+        .modal-box::-webkit-scrollbar-track { background: #000; }
+        .modal-box::-webkit-scrollbar-thumb { background: var(--theme-color); }
         
         .modal-close {
             position: absolute; top: 10px; right: 15px; background: none; border: none;
@@ -329,16 +309,18 @@
         }
         .modal-close:hover { color: #fff; text-shadow: 0 0 10px #fff; }
 
-        .modal-left { width: 40%; }
+        .modal-left { width: 40%; flex-shrink: 0; }
         .modal-left img { width: 100%; border: 1px solid var(--theme-color); filter: grayscale(0.2); }
         
         .modal-right { width: 60%; display: flex; flex-direction: column; }
-        .modal-name { font-size: 1.8rem; color: var(--theme-color); margin: 0 0 10px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .modal-info { color: #ccc; line-height: 1.6; font-size: 0.95rem; }
-        .modal-info span { color: var(--theme-color); font-weight: bold; }
+        .modal-name { font-size: 1.5rem; color: var(--theme-color); margin: 0 0 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-info { color: #ccc; line-height: 1.5; font-size: 0.95rem; display: flex; flex-direction: column; gap: 8px; }
+        .modal-info p { margin: 0; }
+        .modal-info span.title { color: var(--theme-color); font-weight: bold; min-width: 130px; display: inline-block; vertical-align: top; }
+        .modal-info span.desc { display: inline-block; max-width: calc(100% - 135px); vertical-align: top; }
 
         /* -------------------------------------------
-           COLOR THEMES (กำหนดค่าสีตามห้อง)
+           COLOR THEMES
            ------------------------------------------- */
         .theme-gifted { --theme-color: #FFD700; --theme-glow: rgba(255, 215, 0, 0.3); }
         .theme-a { --theme-color: #FF3333; --theme-glow: rgba(255, 51, 51, 0.3); }
@@ -346,7 +328,6 @@
         .theme-c { --theme-color: #00FFFF; --theme-glow: rgba(0, 255, 255, 0.3); }
         .theme-d { --theme-color: #00FF00; --theme-glow: rgba(0, 255, 0, 0.3); }
         
-        /* ปุ่มสีสำหรับ Sub Nav */
         #btn-gifted { --r-color: #FFD700; --r-bg: rgba(255, 215, 0, 0.2); }
         #btn-a { --r-color: #FF3333; --r-bg: rgba(255, 51, 51, 0.2); }
         #btn-b { --r-color: #AAAAAA; --r-bg: rgba(170, 170, 170, 0.2); }
@@ -354,100 +335,93 @@
         #btn-d { --r-color: #00FF00; --r-bg: rgba(0, 255, 0, 0.2); }
 
         /* -------------------------------------------
-           RESPONSIVE (รองรับการแสดงผลบนมือถือ)
+           RESPONSIVE 
            ------------------------------------------- */
         @media (max-width: 768px) {
             .system-ui { padding: 20px 15px; }
             .top-bar { margin-left: 60px; justify-content: center; gap: 10px; }
             .nav-btn { padding: 8px 15px; font-size: 1rem; }
-            
-            .sub-bar { justify-content: center; gap: 10px; } /* บนมือถือจัดปุ่มห้องให้อยู่ตรงกลาง */
+            .sub-bar { justify-content: center; gap: 10px; } 
             .room-btn { padding: 6px 15px; font-size: 0.9rem; }
             
-            /* ปรับหน้าต่างรายละเอียด (Modal) เมื่อเป็นจอมือถือ */
-            .modal-box { flex-direction: column; max-height: 85vh; overflow-y: auto; padding: 20px; }
-            .modal-left { width: 100%; max-width: 150px; margin: 0 auto; }
+            .modal-box { flex-direction: column; padding: 20px; }
+            .modal-left { width: 100%; max-width: 200px; margin: 0 auto 15px auto; }
             .modal-right { width: 100%; }
-            .modal-name { font-size: 1.5rem; text-align: center; }
+            .modal-name { font-size: 1.3rem; text-align: center; }
+            .modal-info span.title { min-width: 100px; }
+            .modal-info span.desc { max-width: calc(100% - 105px); }
         }
-
     </style>
 </head>
 <body class="screen-flicker">
 
-    <!-- ห่อหุ้มทุกอย่างด้วย app-wrapper เพื่อกันไม่ให้อนิเมชันดันหน้าจอจนเกิดแถบ Scrollbar -->
     <div class="app-wrapper">
-
-        <!-- GLOBAL EFFECTS -->
         <div class="noise"></div>
+        <div class="scanlines"></div>
+        <div class="scanline-moving"></div>
+        <div class="vignette"></div>
 
-    <!-- SCREEN 1: START -->
-    <div id="start-screen" class="start-screen">
-        <div class="start-glitch-wrapper" id="btn-glitch-wrapper">
-            <button class="cyber-btn" id="connect-btn"><span>CONNECT</span></button>
-        </div>
-    </div>
-
-    <!-- SCREEN 2: MAIN -->
-    <div id="main-crt" class="crt-container">
-        <div class="tv-turn-on"></div>
-
-        <!-- โลโก้เคลื่อนที่ -->
-        <div id="logo-mover" class="logo-mover">
-            <div class="glitch-wrapper" id="glitch-wrapper">
-                <img src="logo.png" id="main-logo" class="glitch-img" alt="Virelia Logo" onerror="handleImageError(this)">
-                <div class="glitch-layer glitch-layer-1"></div>
-                <div class="glitch-layer glitch-layer-2"></div>
+        <div id="start-screen" class="start-screen">
+            <div class="start-glitch-wrapper" id="btn-glitch-wrapper">
+                <button class="cyber-btn" id="connect-btn"><span>CONNECT</span></button>
             </div>
         </div>
 
-        <!-- UI ที่จะปรากฏหลังจากโลโก้ย้ายเสร็จ -->
-        <div id="system-ui" class="system-ui">
-            <!-- แถบด้านบน -->
-            <div class="top-bar">
-                <button class="nav-btn" id="nav-student">ข้อมูลนักเรียน</button>
-                <button class="nav-btn" id="nav-credit">เครดิต</button>
-            </div>
-
-            <!-- แถบเมนูย่อย (ห้องต่างๆ) -->
-            <div class="sub-bar" id="sub-nav-rooms">
-                <button class="room-btn" id="btn-gifted" data-room="gifted">ห้อง GIFTED</button>
-                <button class="room-btn" id="btn-a" data-room="a">ห้อง A</button>
-                <button class="room-btn" id="btn-b" data-room="b">ห้อง B</button>
-                <button class="room-btn" id="btn-c" data-room="c">ห้อง C</button>
-                <button class="room-btn" id="btn-d" data-room="d">ห้อง D</button>
-            </div>
-
-            <!-- พื้นที่แสดงข้อมูล (Grid/Cards) -->
-            <div class="content-area" id="content-display">
-                <!-- ข้อมูลจะถูก render ด้วย JavaScript ที่นี่ -->
-            </div>
-        </div>
-        <!-- MODAL รายละเอียด -->
-        <div class="modal-overlay" id="detail-modal">
-            <div class="modal-box" id="modal-content">
-                <button class="modal-close" id="close-modal">[X]</button>
-                <div class="modal-left">
-                    <img id="m-img" src="" alt="Profile">
+        <div id="main-crt" class="crt-container">
+            <div class="tv-turn-on"></div>
+            <div id="logo-mover" class="logo-mover">
+                <div class="glitch-wrapper" id="glitch-wrapper">
+                    <img src="logo.png" id="main-logo" class="glitch-img" alt="Virelia Logo" onerror="handleImageError(this)">
+                    <div class="glitch-layer glitch-layer-1"></div>
+                    <div class="glitch-layer glitch-layer-2"></div>
                 </div>
-                <div class="modal-right">
-                    <h2 class="modal-name" id="m-name">NAME</h2>
-                    <div class="modal-info">
-                        <p><span>ระดับชั้น:</span> <span id="m-room" style="color:inherit"></span></p>
-                        <p><span>รหัสนักเรียน:</span> <span id="m-id" style="color:inherit"></span></p>
-                        <p><span>สถานะ:</span> ยืนยันตัวตนแล้ว (ACTIVE)</p>
-                        <br>
-                        <p><span>ข้อมูลเพิ่มเติม:</span></p>
-                        <p id="m-desc">ระบบกำลังดึงข้อมูลจากส่วนกลาง...</p>
+            </div>
+
+            <div id="system-ui" class="system-ui">
+                <div class="top-bar">
+                    <button class="nav-btn" id="nav-student">ข้อมูลนักเรียน</button>
+                    <button class="nav-btn" id="nav-credit">เครดิต</button>
+                </div>
+
+                <div class="sub-bar" id="sub-nav-rooms">
+                    <button class="room-btn" id="btn-gifted" data-room="gifted">ห้อง GIFTED</button>
+                    <button class="room-btn" id="btn-a" data-room="a">ห้อง A</button>
+                    <button class="room-btn" id="btn-b" data-room="b">ห้อง B</button>
+                    <button class="room-btn" id="btn-c" data-room="c">ห้อง C</button>
+                    <button class="room-btn" id="btn-d" data-room="d">ห้อง D</button>
+                </div>
+
+                <div class="content-area" id="content-display"></div>
+            </div>
+
+            <!-- MODAL รายละเอียด (อัปเดตหัวข้อตามข้อมูลจริง) -->
+            <div class="modal-overlay" id="detail-modal">
+                <div class="modal-box" id="modal-content">
+                    <button class="modal-close" id="close-modal">[X]</button>
+                    <div class="modal-left">
+                        <img id="m-img" src="" alt="Profile">
+                    </div>
+                    <div class="modal-right">
+                        <h2 class="modal-name" id="m-name">NAME</h2>
+                        <div class="modal-info">
+                            <p><span class="title">อายุ / วันเกิด:</span> <span class="desc" id="m-age"></span></p>
+                            <p><span class="title">เพศ:</span> <span class="desc" id="m-gender"></span></p>
+                            <p><span class="title">บทบาท:</span> <span class="desc" id="m-role"></span></p>
+                            <p><span class="title">ห้อง:</span> <span class="desc" id="m-room"></span></p>
+                            <p><span class="title">ทักษะ:</span> <span class="desc" id="m-skill"></span></p>
+                            <p><span class="title">สรีระ:</span> <span class="desc" id="m-body"></span></p>
+                            <p><span class="title">อุปนิสัย:</span> <span class="desc" id="m-personality"></span></p>
+                            <p><span class="title">รสนิยม:</span> <span class="desc" id="m-likes"></span></p>
+                            <p><span class="title">สิ่งที่เกลียด:</span> <span class="desc" id="m-dislikes"></span></p>
+                            <p><span class="title">เอกลักษณ์:</span> <span class="desc" id="m-identity"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-    </div> <!-- ปิด app-wrapper -->
+    </div>
 
     <script>
-        // ย้ายฟังก์ชันจัดการรูปภาพมาไว้ระดับ Global เพื่อให้ <img onerror="..."> ทำงานได้ทันที
         function setupGlitchLayers(src) {
             const layers = document.querySelectorAll('.glitch-layer');
             layers.forEach(layer => { layer.style.backgroundImage = `url('${src}')`; });
@@ -457,8 +431,6 @@
             img.onerror = null; 
             const fallbackSrc = 'https://i.ibb.co/9HM6dGQG/175-20260413000814.png';
             img.src = fallbackSrc; 
-            
-            // รอให้โครงสร้าง DOM (เลเยอร์ Glitch) เตรียมพร้อมก่อนโหลดภาพสำรอง
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => setupGlitchLayers(fallbackSrc));
             } else {
@@ -466,52 +438,60 @@
             }
         };
 
-        // ฐานข้อมูลจำลอง (Mock Data) สำหรับนักเรียนแต่ละห้อง
+        // ฐานข้อมูลนักเรียน (ข้อมูลจริงจากที่ให้มา)
         const studentDatabase = {
             'gifted': {
-                theme: 'theme-gifted', roomName: 'GIFTED',
+                theme: 'theme-gifted', roomName: 'Gifted',
                 students: [
-                    { id: 'G-001', name: 'อเล็กซานเดอร์ ไวท์', img: 'https://placehold.co/300x400/222/FFD700?text=S-01', desc: 'นักเรียนหัวกะทิ มีความสามารถพิเศษด้านตรรกะและเวทมนตร์ขั้นสูง' },
-                    { id: 'G-002', name: 'วิกตอเรีย ครอส', img: 'https://placehold.co/300x400/222/FFD700?text=S-02', desc: 'ผู้ใช้พลังจิตระดับ S ควบคุมสิ่งของระยะไกลได้ดีเยี่ยม' },
-                    { id: 'G-003', name: 'ลูคัส เวนน์', img: 'https://placehold.co/300x400/222/FFD700?text=S-03', desc: 'อัจฉริยะด้านวิศวกรรมอาวุธ สร้างอุปกรณ์สู้รบได้ด้วยเศษเหล็ก' }
+                    { id: 'G1', name: `Kenjitsuka Kagami`, img: `G1.png`, age: `20 ปี , 13/04`, gender: `ชาย`, role: `นักเรียน`, skill: `ปรุงยา , ลอบสังหาร`, body: `หน้าหวาน(?) , ผมสีชมพูเหมือนสายไหม , มีรอยสักบนแก้มรูปหัวใจ`, personality: `ใจดีและดูเป็นมิตรที่สุดในสายตาหลายๆคน (?)`, likes: `ชอบดื่มยาพิษที่ตัวเองทำ , sadistic , Machiavellianism :)))`, dislikes: `คนรู้เยอะ`, identity: `หน้าหวานโดนเข้าใจผิดบ่อยว่าเป็นผญ(💔💔)` },
+                    { id: 'G2', name: `Sorai Aozora`, img: `G2.png`, age: `20 ปี / 7 กรกฎา`, gender: `ชาย`, role: `นักเรียน`, skill: `แม่นธนู , ใช้มีดที่มียาพิษอ่อนๆลอบสังหาร`, body: `สูง173 หนัก53 หน้าหวาน , รอยยิ้มหวาน , ผมสีน้ำเงินราตรี , ตาสีทองอำพัน`, personality: `ภายนอกยิ้มแล้วโลกละลาย เป็นคนที่ใจดีกับทุกคนๆ ค่อนข้างเจ้าเล่ห์และมักเหม่อคิดอะไรในหัวคนเดียวเสมอ แต่ถ้ากับคนที่สนใจก็หมกมุ่นมากๆ`, likes: `การเสแสร้ง , วิเคราะห์และตามติดคน , ผีเสื้อ`, dislikes: `คนขี้อวด , คนดูถูกเหยียดหยามตัวเอง`, identity: `ร่าเริง(?) หน้าตาเหมือนผู้หญิง` },
+                    { id: 'G3', name: `ซาโตะ เร็น`, img: `G3.png`, age: `21 xx/xx/xx`, gender: `ชาย`, role: `นักเรียน`, skill: `อาวุธทุกอย่าง`, body: `ผมดำ ตาแดง ตัวสูง`, personality: `นิ่งเงียบ ดุ จริงจังกับกฎระเบียบ`, likes: `ชอบลงโทษคนทำผิด ชอบใช้คำพูดแรง`, dislikes: `คนที่ทำผิดกฎระเบียบ`, identity: `ตาสีแดง การพูด` }
                 ]
             },
             'a': {
                 theme: 'theme-a', roomName: 'Class A',
                 students: [
-                    { id: 'A-012', name: 'เจค โลแกน', img: 'https://placehold.co/300x400/222/FF3333?text=S-04', desc: 'นักเรียนสายต่อสู้ระยะประชิด ทักษะการใช้ดาบยอดเยี่ยม' },
-                    { id: 'A-015', name: 'มีอา ทาร์เก็ต', img: 'https://placehold.co/300x400/222/FF3333?text=S-05', desc: 'พลซุ่มยิงมือฉมัง ไม่เคยพลาดเป้าหมาย' },
-                    { id: 'A-018', name: 'ไรอัน สตอร์ม', img: 'https://placehold.co/300x400/222/FF3333?text=S-06', desc: 'ผู้ใช้ธาตุสายฟ้า เคลื่อนที่ได้รวดเร็วปานสายฟ้าแลบ' }
+                    { id: 'A1', name: `อาเฉิน อาหวัง`, img: `A1.png`, age: `8/june/2007`, gender: `ชาย`, role: `นักเรียน`, skill: `อาวุธระยะประชิด`, body: `ผมชมพูปลายเขียว ตาชมพู สูง`, personality: `ชาเย็น กวนตีน จริงจังกับงาน(มั่ง)`, likes: `คนที่รักเพื่อนและครอบครัว`, dislikes: `ความวุ่นวาย`, identity: `ตาชมพู ผม` },
+                    { id: 'A2', name: `ซูอา`, img: `A2.png`, age: `19 / 8 / 08 / 2007`, gender: `หญิง`, role: `นักเรียน`, skill: `ต่อสู้ระยะประชิต ไช้ปืนได้ ว่องไวหมัดหนักมีพลังกายที่เยอะผิดกับรูปร่างที่ผอม`, body: `168 cm 48.8 kg`, personality: `ยิ้มง่ายใจดีมารยาทงาม`, likes: `-`, dislikes: `-`, identity: `ดวงตาสีไข่มุข มีม้วนผมสีขาวบนหัว` }
                 ]
             },
             'b': {
                 theme: 'theme-b', roomName: 'Class B',
                 students: [
-                    { id: 'B-045', name: 'ซาร่า เลนส์', img: 'https://placehold.co/300x400/222/AAAAAA?text=S-07', desc: 'ฝ่ายสนับสนุน วิเคราะห์ข้อมูลศัตรูได้รวดเร็ว' },
-                    { id: 'B-048', name: 'เคนจิ มูระ', img: 'https://placehold.co/300x400/222/AAAAAA?text=S-08', desc: 'นินจายุคใหม่ เชี่ยวชาญการพรางตัวและการลอบสังหาร' },
-                    { id: 'B-051', name: 'เอ็มม่า โคลด์', img: 'https://placehold.co/300x400/222/AAAAAA?text=S-09', desc: 'ผู้ใช้เวทย์น้ำแข็ง สามารถแช่แข็งพื้นที่กว้างได้' }
+                    { id: 'B1', name: `ฝันร้าย ทัชมาฮาล (ทัช)`, img: `B1.png`, age: `20 / ไม่บอกอย่าหลอกถาม`, gender: `ชาย`, role: `นักเรียน`, skill: `ยิงปืน / แฝงตัว`, body: `ผมถักเปียด้านซ้าย สีดำแซมชมพูนิดหน่อย มีรอยสักทีหน้า`, personality: `เงียบนิ่งสงบเมะหืม อะหยอกเล่น ไม่รู้เหมือนกันสิแล้วแต่คนมองอ่ะครับ อารมณ์สวิงกิ้ง`, likes: `เห็นโลกของตัวเองเป็นสายรุ้งม้าโพนี่`, dislikes: `คนที่พูดไม่เข้าหู ทำอะไรไม่ได้ดั่งใจ`, identity: `รอยยิ้มบนหน้า` },
+                    { id: 'B2', name: `อนัสตเซีย`, img: `B2.png`, age: `19 /16.6.2007`, gender: `woman`, role: `นักเรียน`, skill: `เก่งต่อสู้ระยะไกล`, body: `175/54 D`, personality: `ขี้เล่น ชอบความท้าทาย มีความมั่นใจในตัวเองสูง เก็บอารมณ์เก่ง รักอิสระ มีความเป็นขบถ ขี้ระแวง`, likes: `ยิงธนู,ความวุ่นวาย,แสงจันทร์,ชาเอิร์ลเกรย์`, dislikes: `การถูกบังคับ,คนที่พูดมากแต่ไม่มีผลงาน,การถูกจ้องมองตรงๆ,ของคาว`, identity: `ผมสีม่วงยาวไฮไลท์ดำขาวม่วงอ่อน,ในตาสีเทาประกายชมพูเขียวฟ้า,ไฝที่ริมฝีปากล่างและหางตาขวา,รอยสักที่หน้าผาก` },
+                    { id: 'B3', name: `Kaiza`, img: `B3.png`, age: `23 //17.11.2003`, gender: `ชาย`, role: `นักเรียน`, skill: `ความแม่นยำ ฟังเสียง ทักษะป้องกันระยะประชิดนิดหน่อย`, body: `สูง178 ผมแดงเคะธงดำ`, personality: `ทำทุกอย่างให้บรรลุเป้าหมายชอบกดคนอื่นให้ต่ำใช้วาจาหว่านล้อมให้คนๆนั้นมาเป็นสัตว์เลี้ยงของตนอย่างหลีเลี่ยงไม่ได้`, likes: `ชอบเห็นการนองเลือดและทำให้คนที่ต่ำกว่าเป็นสัตว์เลี้ยง`, dislikes: `คนที่รู้เรื่องราวในอดีตของไคซะสัตว์เลี้ยงอวดเก่ง`, identity: `ตาสีเหลืองมีวงในตาเป็นสีแดง` },
+                    { id: 'B4', name: `สาริกา พายุษา`, img: `B4.png`, age: `20ปี 6/3/2549`, gender: `หญิง`, role: `นักเรียน`, skill: `ยิงแม่น,การสังเกตุ`, body: `สูง 168 ซม. นน.-- สมส่วน`, personality: `-`, likes: `ดอกพิกุล ของหวาน`, dislikes: `พวกไม่เคารพชีวิต`, identity: `ใส่ผ้าโผกหัวและผ้าพันคอสีขาวลายส้ม` },
+                    { id: 'B5', name: `คานากิ คาเมล`, img: `B5.png`, age: `25ปี 07/09/-`, gender: `ชาย`, role: `นักเรียน`, skill: `การใช้ปืนหรือธนู`, body: `สูง169 นน.50`, personality: `นิ่ง เงียบๆ เย็นชากับคนแปลกหน้า แต่ถ้าเป็นคนสนิกจะ ราเร่ง อ่อนโยน ใจดี`, likes: `ดอกฮิกาบานะสีแดง`, dislikes: `น้ำ`, identity: `ดอกไม้สีแดงตรงข้างขวา ตาสีแดงเทาไร้ชีวิตชีวา` },
+                    { id: 'B6', name: `เคิส (คลาร่า)`, img: `B6.png`, age: `20 ปี 7 ธันวาคม 2549`, gender: `หญิง (Demisexual)`, role: `นักเรียน`, skill: `การใช้ปืน , ยิงธนู , ว่องไว`, body: `169 cm 49.5 kg ร่างค่อนข้างผอม`, personality: `กวนๆ ซ่าๆ ขี้แซะ ติดเล่น`, likes: `สีฉูดฉาด(ชมพู , ฟ้า) การวาดภาพ เล่นตลกกับเหยื่อ แซะคนไปเรื่อย`, dislikes: `การใช้แรงหรือพลกำลัง , ไม่ชอบคนที่ตายด้าน , ถูกหักหลังหรือทอดทิ้ง`, identity: `ผมข้างหน้าที่มีการย้อมจากสีสเปร์ยที่ไม่ดีนัก , สีตาชมพู` },
+                    { id: 'B7', name: `วรเมธ เทวานิกุล (เมฆ)`, img: `B7.png`, age: `19/7/7/2007`, gender: `ชาย`, role: `นักเรียน`, skill: `การยิงที่แม่นยํา`, body: `180/78.893615831`, personality: `พูดมากพูดไปเลยพูดได้พูดดีพูดอยู่นั้นและพูดไปเลื่อยพูดไปเถอะพูดพูดพูดซ้ายพูดขวาพูดหน้าได้หลังพูดอ้วน`, likes: `เกลียด อะไรวะ`, dislikes: `🙂‍↔️ไม่รู้`, identity: `โง่ พูดมาก ฉลาด เก่ง โหด กุมาได้ไง โคตรเท่เทพเรียกพี่ น้องเรียกพี่ชาย ชายเรียกมาเหนือ` }
                 ]
             },
             'c': {
                 theme: 'theme-c', roomName: 'Class C',
                 students: [
-                    { id: 'C-088', name: 'ลีโอ แฟลช', img: 'https://placehold.co/300x400/222/00FFFF?text=S-10', desc: 'แฮกเกอร์ประจำชั้นเรียน เจาะระบบป้องกันได้ทุกรูปแบบ' },
-                    { id: 'C-091', name: 'โซเฟีย ซาวด์', img: 'https://placehold.co/300x400/222/00FFFF?text=S-11', desc: 'ควบคุมคลื่นเสียง ใช้โจมตีระบบประสาทศัตรู' },
-                    { id: 'C-094', name: 'คาร์ล ชิลด์', img: 'https://placehold.co/300x400/222/00FFFF?text=S-12', desc: 'สายป้องกัน สานพลังสร้างบาเรียที่แข็งแกร่งที่สุด' }
+                    { id: 'C1', name: `ทิมมังกาซอ รัตนวิมล (เหมย)`, img: `C1.png`, age: `9/4/2551`, gender: `หญิง`, role: `นักเรียน`, skill: `วิ่งไว คล่องเเคล่ว`, body: `ตัวเล็ก ค่อนไปทางเตี้ย`, personality: `เรื้อนระยะสุดท้าย`, likes: `คนที่ใจดีและอบอุ่นเหมือนพี่ชายของเธอ`, dislikes: `ร่างกายของตนเองที่เล็กเเละบางเกินไป / คนที่ล้อส่วนสูง`, identity: `เตี้ย` },
+                    { id: 'C2', name: `อาซากาวะ คุโรเก็น`, img: `C2.png`, age: `25 ปี , 21/10`, gender: `ชาย`, role: `นักเรียน`, skill: `เเฝงตัวเเละลอบสังหาร`, body: `หน้าไม่ค่อยรับเเขก มีผมสีดำไฮไลท์เเดง ตาสีเหลือง`, personality: `ไม่พูดคุยกับคนเเปลกหน้ายกเว้นคนสนิท รำคาญง่าย สนเเต่การศึกษา`, likes: `ชอบความรุนเเรง ชอบเสี่ยงเเม้จะรู้ว่าตนเองต้องเจ็บตัว`, dislikes: `เกลียดการถูกรบกวน ไม่ชอบให้เข้ามาใกล้ชิดมากเกินไป`, identity: `สวมเเว่นเเละมักจะถือหนังสือตลอดเวลา` },
+                    { id: 'C3', name: `ลาวา ลาบูบู้`, img: `C3.png`, age: `พี่หลอกอย่าบอกใคร`, gender: `หญิง`, role: `นักเรียน`, skill: `เซ็ตหย่อสูตต่อ`, body: `ตัวเล็ก ผมชมพู ตาชมพู มึน บ๊อบสั้นมีหน้าม้าผมโพนี่เทล`, personality: `มึนๆอึนๆ พี่เก่งแต่เกิดเลยเปิดแต่ปาก`, likes: `ชาเขียวหวานน้อย ของอร่อย`, dislikes: `คนไม่ฟูง พูดไม่เข้าหู`, identity: `หน้ามึนๆ` },
+                    { id: 'C4', name: `ชูภัทร เมอร์เกน (ชู)`, img: `C4.png`, age: `19 / 19 / 06 / 2550`, gender: `ชาย`, role: `นักเรียน`, skill: `เก่งในที่มืดและว่องไว ใช้อาวุธได้ทุกรูปแบบ (ยกเว้นอาวุธหนัก)`, body: `175 cm 53.9 kg`, personality: `-`, likes: `ชอบฟังเพลงและวื่ง`, dislikes: `ของหวานทุกอย่าง`, identity: `ไอหัวสายไหม เก่งเป็นบางสถานการ์ณ` },
+                    { id: 'C5', name: `แสงสี แสงสะท้อน (แจ็ค)`, img: `C5.png`, age: `17–18 ปี | 4/5`, gender: `ชาย (?)`, role: `นักเรียน`, skill: `การถ่ายรูป`, body: `ตัวสูง ผมยาวสีฟ้าอมเทา ใส่คอนเทคเลนส์`, personality: `ร่าเริง เข้ากับคนง่าย พูดกวนๆ (?)`, likes: `คนที่ดูน่าค้นหา และ ทำให้คลั่งไคล้หรือลุ่มหลงได้ ยิ่งน่าค้นหายิ่งน่าสนใจ`, dislikes: `ผู้คนหมู่มาก (?)`, identity: `คนสดใสคนนึงที่พูดมาก (?)` },
+                    { id: 'C6', name: `Aizumi Otsuki (อัยซุมิ โอสึกิ)`, img: `C6.png`, age: `19 / 27 Dec 07`, gender: `female`, role: `นักเรียน`, skill: `การเสแสร้ง , การลอบสังหาร`, body: `ตัวเตี้ยกว่ามาตรฐาน (153ซม.) ผมชมพูไล่ไปฟ้าอ่อน ตาสองสี มีกิ๊บดาว`, personality: `Extrovert, ร่าเริง, บ๊อง, ขี้แกล้ง, รักสัตว์ขนฟู`, likes: `สัตว์ขนฟูทุกชนิด, ของหวาน, ของน่ารักๆ, สีชมพูฟ้า`, dislikes: `งู, คนที่บุกเข้ามาในห้องโดยไม่ได้รับอนุญาต, การถูกคุกคาม`, identity: `ตาสองสี และกิ๊บดาว` },
+                    { id: 'C7', name: `Mikoto Masaki`, img: `C7.png`, age: `23 ปี 19/11/02`, gender: `หญิง`, role: `นักเรียน`, skill: `ลอบสังหาร สืบข้อมูล หลบหนี`, body: `สูง 165 ผมสีฟ้า ดวงตาสีแดงเข้ม หน้าหวาน ยิ้มหวาน น่ารัก`, personality: `น่ารัก จิตใจดี พูดดี พูดเพราะ ดูไม่ค่อยสู้คน? สนิทคนง่าย เชื่อคนง่าย`, likes: `ดอกกุหลาบที่มีหนาม อะไรที่เป็นสีแดงเข้ม มีด โบว์สีดำ`, dislikes: `การเสียผลประโยนข์ คนไร้ประสิทธิภาพ คนน่ารำคาญเกินไป คนถามซํ้าๆ`, identity: `โบว์ติดผมสีดำ ยิ้มแถบตลอดเวลา` }
                 ]
             },
             'd': {
                 theme: 'theme-d', roomName: 'Class D',
                 students: [
-                    { id: 'D-120', name: 'จิมมี่ รูท', img: 'https://placehold.co/300x400/222/00FF00?text=S-13', desc: 'ผู้ใช้พฤกษาศาสตร์ ควบคุมต้นไม้กลายพันธุ์' },
-                    { id: 'D-122', name: 'อลิซ พอยซัน', img: 'https://placehold.co/300x400/222/00FF00?text=S-14', desc: 'เชี่ยวชาญด้านพิษและสารเคมีอันตราย' },
-                    { id: 'D-125', name: 'ทอมมี่ บีสต์', img: 'https://placehold.co/300x400/222/00FF00?text=S-15', desc: 'สามารถกลายร่างบางส่วนเป็นสัตว์ร้ายเพื่อเพิ่มพละกำลัง' }
+                    { id: 'D1', name: `จันทรวิมล เทวานิกุล`, img: `D1.png`, age: `29/02`, gender: `หญิง`, role: `นักเรียน`, skill: `ปรุงยา`, body: `ตัวเล็กจิ๋ว`, personality: `ใจดี ซน ดื้อ ร่าเริง`, likes: `ลูกอม นม พูดน้อย`, dislikes: `คนที่ส่วนสูง`, identity: `แววตา` },
+                    { id: 'D2', name: `คารีส`, img: `D2.png`, age: `23 ปี 1/11/02`, gender: `หญิง`, role: `นักเรียน`, skill: `เก่งปรุงยา อาวุธ ระยะไกล`, body: `165 / 54`, personality: `พูดน้อย เงียบ ชอบเข้าสังคม`, likes: `-`, dislikes: `พวกที่ลบลู่ พระเจ้า`, identity: `ไม้กางเขน` },
+                    { id: 'D3', name: `เดรก วิกเตอร์`, img: `D3.png`, age: `18ปี / 21เมษายน`, gender: `ชาย`, role: `นักเรียน`, skill: `ปรุงยา หาข้อมูล`, body: `ผมสีน้ำตาล ตาสีแดงทับทิม มีรอยสักรูปบวกที่หน้า`, personality: `ร่าเริง เฟรนลี่ รักเพื่อน จะทำอ่ะไรคิดล่วงหน้าหมด ไม่ชอบไห้รู้นิสัยจริงๆ`, likes: `ดวงอาทิตย์ วิจัย ผ่าตัด`, dislikes: `พวกมีดีแต่ปาก`, identity: `รอยยิ้มที่หน้า` },
+                    { id: 'D4', name: `Luffy Camilla Love (เลิฟ)`, img: `D4.png`, age: `18ปี 25/07/XX`, gender: `คุณผู้หญิง`, role: `นักเรียน`, skill: `มีความรุ้รอบตัวเกี่ยวกับยา หลอกคนเก่ง(วางยาเก่ง) เลี้ยงเเฮมเตอร์`, body: `เตี้ย ตัวเล็ก เเต่มีความรุ้เย้ออ`, personality: `คุณหนูข๋า น่ารัก ใจดี ชอบเเบ่งปันขนม`, likes: `ชอบหนังสือ เเฮมเตอร์ คนหล่อ ไม่ตกเป็นทาสใคร หัวสูง`, dislikes: `พี่ชายตัวเองที่ได้ทุกอย่าง`, identity: `ผมเหลืองชมพู มัดเเกะสองข้าง เลี้ยงเเฮมเตอร์ไว้บนหัว` },
+                    { id: 'D5', name: `เจิ่น โซ่วอี้`, img: `D5.png`, age: `20 / 11 สิงหาคม 2006`, gender: `ชาย`, role: `นักเรียน`, skill: `เย็บปักทักร้อย`, body: `ผอม สูงโปร่ง ดูไม่มีแรง`, personality: `ชิว ๆ ไม่เต็มเต็ง บ้าคลั่ง`, likes: `ชอบนำศw ของเหยื่อที่ฆ่ามาเย็บ ติดกันด้วยเข็มกับด้าย แล้วเรียกสิ่งที่น่าเวทนานั่นว่า "ศิลปะ"`, dislikes: `การออกกำลังนาน ๆ (วิ่งระยะไกล, ชักเย่อ)`, identity: `รอยยิ้มที่ชวนขนลุก ตาสีฟ้า` }
                 ]
             }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // โลโก้ และ เอฟเฟกต์ Intro
             const startScreen = document.getElementById('start-screen');
             const mainCrt = document.getElementById('main-crt');
             const connectBtn = document.getElementById('connect-btn');
@@ -520,7 +500,6 @@
             const logoWrapper = document.getElementById('glitch-wrapper');
             const imgElement = document.getElementById('main-logo');
             
-            // UI Elements
             const systemUi = document.getElementById('system-ui');
             const navStudent = document.getElementById('nav-student');
             const navCredit = document.getElementById('nav-credit');
@@ -528,20 +507,13 @@
             const roomBtns = document.querySelectorAll('.room-btn');
             const contentDisplay = document.getElementById('content-display');
             
-            // Modal Elements
             const modalOverlay = document.getElementById('detail-modal');
             const modalContent = document.getElementById('modal-content');
             const closeModal = document.getElementById('close-modal');
-            const mImg = document.getElementById('m-img');
-            const mName = document.getElementById('m-name');
-            const mRoom = document.getElementById('m-room');
-            const mId = document.getElementById('m-id');
-            const mDesc = document.getElementById('m-desc');
 
-            // Set Logo Fallback (เรียกใช้ครั้งแรกเมื่อโหลดเสร็จ)
-            setupGlitchLayers(imgElement.src);
+            // ใช้ Fallback รูปเมื่อโลโก้โหลดไม่ผ่าน
+            if(imgElement.complete) { setupGlitchLayers(imgElement.src); }
 
-            // อนิเมชันปุ่ม
             let btnGlitchTimeout;
             function triggerBtnGlitch() {
                 btnGlitchWrapper.classList.add('is-glitching');
@@ -560,7 +532,6 @@
                 }, Math.random() * 300 + 100);
             }
 
-            // --- เริ่มต้นระบบเมื่อกดปุ่ม CONNECT ---
             connectBtn.addEventListener('click', () => {
                 clearTimeout(btnGlitchTimeout);
                 startScreen.style.display = 'none';
@@ -568,77 +539,58 @@
                 
                 setTimeout(() => {
                     triggerLogoGlitch();
-                    
-                    // ให้โลโก้ย้ายไปซ้ายบนหลังผ่านไป 2 วิ
                     setTimeout(() => {
                         logoMover.classList.add('corner-mode');
                         logoWrapper.classList.add('is-spinning');
-                        
-                        // รอให้โลโก้ย้ายเสร็จ (1.5วิ) แล้วแสดง UI แถบบน
-                        setTimeout(() => {
-                            systemUi.classList.add('visible');
-                        }, 1500);
-
+                        setTimeout(() => { systemUi.classList.add('visible'); }, 1500);
                     }, 2000);
-
                 }, 1500);
             });
 
-            // --- ระบบนำทาง UI ---
             navStudent.addEventListener('click', () => {
                 navStudent.classList.add('active');
                 navCredit.classList.remove('active');
-                // เปิด Sub Menu
                 subNavRooms.classList.add('active');
-                // ล้างเนื้อหาตรงกลางถ้ามี
-                contentDisplay.innerHTML = '<p style="color:#aaa; font-style:italic;">กรุณาเลือกห้องเพื่อดูข้อมูล...</p>';
+                contentDisplay.innerHTML = '<p style="color:#aaa; font-style:italic; margin-top:50px;">กรุณาเลือกห้องเพื่อดูข้อมูลนักเรียน...</p>';
                 roomBtns.forEach(b => b.classList.remove('active'));
             });
 
             navCredit.addEventListener('click', () => {
                 navCredit.classList.add('active');
                 navStudent.classList.remove('active');
-                // ปิด Sub Menu
                 subNavRooms.classList.remove('active');
-                // แสดงเครดิต
                 contentDisplay.innerHTML = `
-                    <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
+                    <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
                         <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
-                        <p style="color: #ccc; line-height: 2;">System Version: 2.0.26<br>Developed by: Admin System<br>Status: SECURE</p>
+                        <p style="color: #ccc; line-height: 2;">System Version: 2.1.00<br>Updated on: May 2026<br>Status: SECURE</p>
                     </div>
                 `;
             });
 
-            // --- เรนเดอร์ข้อมูลนักเรียนตามห้องที่เลือก ---
             roomBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    // จัดการปุ่ม Active
                     roomBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
                     const roomId = btn.getAttribute('data-room');
                     const roomData = studentDatabase[roomId];
-                    
-                    // เคลียร์จอ
                     contentDisplay.innerHTML = '';
 
-                    // สร้าง Profile Cards
                     roomData.students.forEach((student, index) => {
                         const card = document.createElement('div');
                         card.className = `profile-card ${roomData.theme}`;
-                        card.style.animationDelay = `${index * 0.15}s`; // ให้โหลดไล่กันทีละนิด
+                        card.style.animationDelay = `${index * 0.1}s`; 
                         
+                        // ใช้ภาพสำรองหากโหลดไฟล์ G1.png, A1.png ไม่ขึ้น
                         card.innerHTML = `
                             <div class="profile-img-container">
-                                <img src="${student.img}" class="profile-img" alt="${student.name}">
+                                <img src="${student.img}" class="profile-img" alt="${student.name}" onerror="this.onerror=null; this.src='https://placehold.co/300x400/222/555?text=NO+IMAGE';">
                             </div>
                             <div class="profile-name">${student.name}</div>
                             <button class="detail-btn">รายละเอียด</button>
                         `;
 
-                        // ผูก Event ให้ปุ่มรายละเอียดเปิด Modal
-                        const detailBtn = card.querySelector('.detail-btn');
-                        detailBtn.addEventListener('click', () => {
+                        card.querySelector('.detail-btn').addEventListener('click', () => {
                             openModal(student, roomData.theme, roomData.roomName);
                         });
 
@@ -647,32 +599,30 @@
                 });
             });
 
-            // --- ระบบ Modal ---
             function openModal(studentData, themeClass, roomNameStr) {
-                // เซ็ตข้อมูล
+                // ดึงภาพ ถ้าโหลดไม่สำเร็จใช้ภาพ NO IMAGE
+                const mImg = document.getElementById('m-img');
                 mImg.src = studentData.img;
-                mName.textContent = studentData.name;
-                mRoom.textContent = roomNameStr;
-                mId.textContent = studentData.id;
-                mDesc.textContent = studentData.desc;
-
-                // เปลี่ยนสีกรอบ Modal ตามห้อง
-                modalContent.className = `modal-box ${themeClass}`;
+                mImg.onerror = function() { this.src = 'https://placehold.co/300x400/222/555?text=NO+IMAGE'; };
                 
-                // แสดงผล
+                document.getElementById('m-name').textContent = studentData.name;
+                document.getElementById('m-age').textContent = studentData.age;
+                document.getElementById('m-gender').textContent = studentData.gender;
+                document.getElementById('m-role').textContent = studentData.role;
+                document.getElementById('m-room').textContent = roomNameStr;
+                document.getElementById('m-skill').textContent = studentData.skill;
+                document.getElementById('m-body').textContent = studentData.body;
+                document.getElementById('m-personality').textContent = studentData.personality;
+                document.getElementById('m-likes').textContent = studentData.likes;
+                document.getElementById('m-dislikes').textContent = studentData.dislikes;
+                document.getElementById('m-identity').textContent = studentData.identity;
+
+                modalContent.className = `modal-box ${themeClass}`;
                 modalOverlay.classList.add('active');
             }
 
-            closeModal.addEventListener('click', () => {
-                modalOverlay.classList.remove('active');
-            });
-            
-            // ปิดเมื่อคลิกพื้นที่ว่างด้านนอก
-            modalOverlay.addEventListener('click', (e) => {
-                if(e.target === modalOverlay) {
-                    modalOverlay.classList.remove('active');
-                }
-            });
+            closeModal.addEventListener('click', () => { modalOverlay.classList.remove('active'); });
+            modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) { modalOverlay.classList.remove('active'); }});
         });
     </script>
 </body>
