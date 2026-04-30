@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virelia Academy - System Boot</title>
+    <style>
+        /* รีเซ็ตค่าพื้นฐาน */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* คอนเทนเนอร์หลักสำหรับเอฟเฟกต์ทีวี */
+        .crt-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #050505;
+            overflow: hidden;
+        }
+
+        /* 1. เอฟเฟกต์เปิดทีวี (แสงวาบแล้วขยายออก) */
+        .tv-turn-on {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            transform: translate(-50%, -50%) scale(0, 0);
+            z-index: 100;
+            animation: turn-on 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            pointer-events: none;
+        }
+
+        @keyframes turn-on {
+            0% { transform: translate(-50%, -50%) scale(0.001, 0.001); background-color: #ffffff; opacity: 1; }
+            20% { transform: translate(-50%, -50%) scale(1, 0.005); background-color: #ffffff; opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1, 1); background-color: #ffffff; opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1, 1); background-color: transparent; opacity: 0; visibility: hidden; }
+        }
+
+        /* 2. เอฟเฟกต์จุดซ่า (Noise) บนหน้าจอ */
+        .noise {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.12;
+            /* ใช้ SVG Data URI เพื่อสร้าง Noise แบบธรรมชาติ */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            animation: noise-anim 0.15s infinite linear;
+        }
+
+        @keyframes noise-anim {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-5%, 5%); }
+            40% { transform: translate(5%, -5%); }
+            60% { transform: translate(-5%, -5%); }
+            80% { transform: translate(5%, 5%); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* 3. เส้นสแกน (Scanlines) ของจอตู้ */
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 11;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 6px;
+        }
+
+        /* เส้นแสงที่เลื่อนลงมา */
+        .scanline-moving {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 20px;
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            animation: scanline-move 6s linear infinite;
+            z-index: 12;
+            pointer-events: none;
+        }
+
+        @keyframes scanline-move {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        /* 4. ขอบจอมืด (Vignette) ให้ดูเป็นจอโค้ง */
+        .vignette {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* ส่วนเนื้อหาหลัก */
+        .content {
+            opacity: 0;
+            animation: show-content 0.1s 1.2s forwards;
+            z-index: 5;
+            position: relative;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes show-content {
+            to { opacity: 1; }
+        }
+
+        /* โครงสร้างสำหรับทำเอฟเฟกต์ Glitch ให้กับรูปภาพ */
+        .glitch-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 80vw;
+            width: 450px;
+            aspect-ratio: 1 / 1;
+            margin-bottom: 20px;
+        }
+
+        .glitch-img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* เพิ่มเอฟเฟกต์เรืองแสง (Glow) คล้ายข้อความเดิมมาใส่ที่ภาพ */
+            filter: contrast(1.1) brightness(0.9) drop-shadow(0 0 15px rgba(255, 51, 51, 0.6));
+            animation: img-pulse 2s infinite alternate;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes img-pulse {
+            0% { filter: contrast(1.1) brightness(0.9) drop-shadow(0 0 10px rgba(255, 51, 51, 0.4)); }
+            100% { filter: contrast(1.1) brightness(1) drop-shadow(0 0 25px rgba(255, 51, 51, 0.9)); }
+        }
+
+        /* เลเยอร์ซ้อนทับสำหรับทำสีแยก แดง/ฟ้า (Chromatic Aberration) */
+        .glitch-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* คลาสที่จะถูกเพิ่มด้วย JavaScript เพื่อแสดงอาการกระตุก */
+        .is-glitching .glitch-img {
+            opacity: 0.8;
+            filter: contrast(1.5) brightness(1.2) grayscale(0.2);
+        }
+
+        .is-glitching .glitch-layer-1 {
+            opacity: 0.7;
+            transform: translate(-8px, 3px);
+            mix-blend-mode: screen;
+            filter: hue-rotate(90deg) saturate(3);
+            animation: glitch-anim-1 0.2s infinite linear alternate-reverse;
+        }
+
+        .is-glitching .glitch-layer-2 {
+            opacity: 0.7;
+            transform: translate(8px, -3px);
+            mix-blend-mode: screen;
+            filter: hue-rotate(-90deg) saturate(3);
+            animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
+        }
+
+        /* แอนิเมชันสไลซ์ภาพให้ขาดจากกัน */
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-8px, 1px); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(8px, -2px); }
+            40% { clip-path: inset(40% 0 50% 0); transform: translate(-8px, 2px); }
+            60% { clip-path: inset(80% 0 5% 0); transform: translate(8px, -1px); }
+            80% { clip-path: inset(10% 0 70% 0); transform: translate(-8px, 1px); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(8px, -2px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(8px, -1px); }
+            20% { clip-path: inset(80% 0 5% 0); transform: translate(-8px, 2px); }
+            40% { clip-path: inset(30% 0 20% 0); transform: translate(8px, -2px); }
+            60% { clip-path: inset(70% 0 15% 0); transform: translate(-8px, 1px); }
+            80% { clip-path: inset(5% 0 80% 0); transform: translate(8px, -1px); }
+            100% { clip-path: inset(40% 0 30% 0); transform: translate(-8px, 2px); }
+        }
+        
+        /* หน้าจอกะพริบเล็กน้อยให้ดูเป็นจอตู้ */
+        .screen-flicker {
+            animation: crt-flicker 0.15s infinite;
+        }
+        
+        @keyframes crt-flicker {
+            0% { opacity: 0.95; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="crt-container screen-flicker">
+        <!-- เอฟเฟกต์หน้าจอ -->
+        <div class="tv-turn-on"></div>
+        <div class="scanlines"></div>
+        <div class="scanline-moving"></div>
+        <div class="noise"></div>
+        <div class="vignette"></div>
+
+        <!-- เนื้อหาหลัก -->
+        <div class="content">
+            <div class="glitch-wrapper" id="glitch-wrapper">
+                <!-- โลโก้หลัก (กำหนด onerror เพื่อใช้ภาพสำรองหากหาไฟล์ไม่เจอ) -->
+                <img src="https://i.ibb.co/9HM6dGQG/175-20260413000814.png" 
+                     id="main-logo" 
+                     class="glitch-img" 
+                     alt="Virelia Academy Logo"
+                     onerror="handleImageError(this)">
+                
+                <!-- เลเยอร์สำหรับทำภาพแยกสีเวลาเกิด Glitch -->
+                <div class="glitch-layer glitch-layer-1"></div>
+                <div class="glitch-layer glitch-layer-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapper = document.getElementById('glitch-wrapper');
+            const imgElement = document.getElementById('main-logo');
+            const glitchLayers = document.querySelectorAll('.glitch-layer');
+
+            // เซ็ต background ให้เลเยอร์ Glitch ตรงกับภาพหลัก
+            function setupGlitchLayers(src) {
+                glitchLayers.forEach(layer => {
+                    layer.style.backgroundImage = `url('${src}')`;
+                });
+            }
+            setupGlitchLayers(imgElement.src);
+
+            // ฟังก์ชันรับมือหากโหลดรูปไม่สำเร็จ (เอาไว้พรีวิว)
+            window.handleImageError = function(img) {
+                img.onerror = null; 
+                // ใช้รูป Placeholder กรณีที่ไม่ได้วางไฟล์รูปไว้ในโฟลเดอร์เดียวกัน
+                const fallbackSrc = 'https://placehold.co/500x500/111/ff0000?text=Virelia+Academy';
+                img.src = fallbackSrc;
+                setupGlitchLayers(fallbackSrc);
+            };
+
+            // ฟังก์ชันสุ่มการเกิด Glitch ให้ดูธรรมชาติ (ไม่กระตุกตลอดเวลา)
+            function triggerRandomGlitch() {
+                // เพิ่มคลาสให้กระตุก
+                wrapper.classList.add('is-glitching');
+                
+                // สุ่มระยะเวลาที่กระตุก (สั้นๆ ประมาณ 0.1 - 0.4 วินาที)
+                const glitchDuration = Math.random() * 300 + 100;
+                
+                setTimeout(() => {
+                    // หยุดกระตุก
+                    wrapper.classList.remove('is-glitching');
+                    
+                    // สุ่มเวลาที่จะกระตุกครั้งต่อไป (ประมาณ 1.5 - 5 วินาที)
+                    const nextGlitchIn = Math.random() * 3500 + 1500;
+                    setTimeout(triggerRandomGlitch, nextGlitchIn);
+                }, glitchDuration);
+            }
+
+            // เริ่มทำงานหลังจากแอนิเมชันเปิดทีวีจบลง (ประมาณ 1.5 วินาที)
+            setTimeout(() => {
+                triggerRandomGlitch();
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
