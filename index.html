@@ -14,13 +14,11 @@
             overscroll-behavior: none;
             font-family: 'Courier New', Courier, monospace;
             color: #fff;
-            /* เพิ่มระบบป้องกันการคลุมดำข้อความและภาพ */
             user-select: none;
             -webkit-user-select: none;
             -ms-user-select: none;
         }
 
-        /* เพิ่มระบบป้องกันการลากรูปภาพและการโต้ตอบกับรูปภาพโดยตรง */
         img {
             -webkit-user-drag: none;
             pointer-events: none; 
@@ -217,6 +215,11 @@
             background: rgba(255, 51, 51, 0.2); text-shadow: 0 0 5px #ff3333; box-shadow: 0 0 10px inset rgba(255,51,51,0.5);
         }
 
+        #nav-account { color: #00FFFF; border-color: #00FFFF; }
+        #nav-account:hover, #nav-account.active {
+            background: rgba(0, 255, 255, 0.2); text-shadow: 0 0 5px #00FFFF; box-shadow: 0 0 10px inset rgba(0,255,255,0.5);
+        }
+
         .sub-bar {
             display: flex; justify-content: flex-end; gap: 15px; flex-wrap: wrap; 
             padding: 0; max-height: 0; overflow: hidden; opacity: 0; 
@@ -237,7 +240,6 @@
             background: var(--r-bg); box-shadow: 0 0 10px var(--r-color); text-shadow: 0 0 3px #fff; color: #fff;
         }
 
-        /* พื้นที่แสดงโปรไฟล์ */
         .content-area {
             flex-grow: 1; margin-top: 20px; overflow-y: auto;
             display: flex; justify-content: center; align-items: flex-start; gap: 40px;
@@ -288,9 +290,15 @@
         .detail-btn {
             background: rgba(255,255,255,0.1); border: 1px solid var(--theme-color);
             color: #fff; padding: 8px 0; width: 100%; font-family: inherit; cursor: pointer;
-            text-transform: uppercase; transition: all 0.2s; font-size: 0.9rem;
+            text-transform: uppercase; transition: all 0.2s; font-size: 0.9rem; margin-bottom: 5px;
         }
         .detail-btn:hover { background: var(--theme-color); color: #000; font-weight: bold; }
+
+        .action-btn { background: rgba(255,255,255,0.05); border: 1px solid #FFD700; color: #FFD700; }
+        .action-btn:hover, .action-btn.active { background: #FFD700; color: #000; font-weight: bold; box-shadow: 0 0 10px #FFD700; }
+        
+        .comment-toggle-btn { border-color: #00FFFF; color: #00FFFF; }
+        .comment-toggle-btn:hover, .comment-toggle-btn.active { background: #00FFFF; color: #000; font-weight: bold; box-shadow: 0 0 10px #00FFFF; }
 
         /* -------------------------------------------
            MODAL (หน้าต่างรายละเอียด)
@@ -315,19 +323,92 @@
         
         .modal-close {
             position: absolute; top: 10px; right: 15px; background: none; border: none;
-            color: var(--theme-color); font-size: 1.5rem; cursor: pointer; font-family: inherit;
+            color: var(--theme-color); font-size: 1.5rem; cursor: pointer; font-family: inherit; z-index: 200;
         }
         .modal-close:hover { color: #fff; text-shadow: 0 0 10px #fff; }
 
-        .modal-left { width: 40%; flex-shrink: 0; }
-        .modal-left img { width: 100%; border: 1px solid var(--theme-color); filter: grayscale(0.2); }
+        .modal-left { width: 40%; flex-shrink: 0; display: flex; flex-direction: column; position: relative;}
         
+        /* แก้ไขให้รูปภาพใน Modal กดได้และเตรียมแปะหัวใจ */
+        .modal-img-wrapper { position: relative; width: 100%; display: inline-block; overflow: hidden; border: 1px solid var(--theme-color); cursor: default; }
+        .modal-img-wrapper.liking-mode { cursor: crosshair; border-color: #FFD700; box-shadow: 0 0 15px #FFD700; }
+        #m-img { width: 100%; display: block; filter: grayscale(0.2); pointer-events: auto; -webkit-user-drag: none; }
+        
+        .heart-marker {
+            position: absolute; transform: translate(-50%, -50%);
+            color: #ff3333; font-size: 20px; text-shadow: 0 0 5px #000;
+            pointer-events: none; display: flex; flex-direction: column; align-items: center;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        .heart-marker .nickname {
+            font-size: 10px; color: #fff; background: rgba(0,0,0,0.8);
+            padding: 2px 5px; border-radius: 4px; white-space: nowrap; margin-top: 2px;
+            font-family: inherit; font-weight: bold; border: 1px solid #ff3333;
+        }
+
         .modal-right { width: 60%; display: flex; flex-direction: column; }
         .modal-name { font-size: 1.5rem; color: var(--theme-color); margin: 0 0 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .modal-info { color: #ccc; line-height: 1.5; font-size: 0.95rem; display: flex; flex-direction: column; gap: 8px; }
         .modal-info p { margin: 0; }
         .modal-info span.title { color: var(--theme-color); font-weight: bold; min-width: 130px; display: inline-block; vertical-align: top; }
         .modal-info span.desc { display: inline-block; max-width: calc(100% - 135px); vertical-align: top; }
+
+        /* -------------------------------------------
+           COMMENTS SECTION
+           ------------------------------------------- */
+        .comments-container {
+            margin-top: 20px; padding-top: 15px; border-top: 1px dashed #333;
+            display: none; flex-direction: column; flex-grow: 1;
+        }
+        .comments-container.active { display: flex; }
+        .comments-list {
+            flex-grow: 1; max-height: 200px; overflow-y: auto; margin-bottom: 10px;
+            padding-right: 5px; scrollbar-width: thin; scrollbar-color: #00FFFF #000;
+        }
+        .comments-list::-webkit-scrollbar { width: 5px; }
+        .comments-list::-webkit-scrollbar-track { background: #000; }
+        .comments-list::-webkit-scrollbar-thumb { background: #00FFFF; }
+        
+        .comment-item { margin-bottom: 10px; background: rgba(0,255,255,0.05); padding: 8px 10px; border-left: 2px solid #00FFFF; font-size: 0.85rem; }
+        .comment-name { color: #00FFFF; font-weight: bold; margin-bottom: 3px; display: block; font-size: 0.8rem; }
+        .comment-text { color: #ddd; word-break: break-word; }
+
+        .comment-input-area { display: flex; gap: 5px; }
+        .comment-input-area input {
+            flex-grow: 1; background: #111; border: 1px solid #333; color: #fff;
+            padding: 8px; font-family: inherit; outline: none;
+        }
+        .comment-input-area input:focus { border-color: #00FFFF; }
+        .comment-input-area button {
+            background: #00FFFF; color: #000; border: none; font-weight: bold;
+            padding: 0 15px; cursor: pointer; font-family: inherit; text-transform: uppercase;
+        }
+
+        /* -------------------------------------------
+           ACCOUNT TAB INPUT
+           ------------------------------------------- */
+        .account-input-group { margin-top: 20px; display: flex; flex-direction: column; max-width: 300px; gap: 10px; }
+        .account-input-group input {
+            background: #111; border: 1px solid #00FFFF; color: #fff; padding: 10px; font-family: inherit; font-size: 1rem; outline: none;
+        }
+        .account-input-group button {
+            background: rgba(0, 255, 255, 0.2); border: 1px solid #00FFFF; color: #00FFFF; padding: 10px; font-family: inherit; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .account-input-group button:hover { background: #00FFFF; color: #000; }
+
+        /* -------------------------------------------
+           TOAST NOTIFICATION
+           ------------------------------------------- */
+        .toast-msg {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); border: 1px solid #ff3333; color: #fff;
+            padding: 10px 25px; border-radius: 5px; font-family: inherit; font-weight: bold;
+            z-index: 9999; box-shadow: 0 0 15px rgba(255,51,51,0.5);
+            animation: toast-in 0.3s ease-out;
+        }
+        @keyframes toast-in { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 
         /* -------------------------------------------
            COLOR THEMES
@@ -355,13 +436,34 @@
             .room-btn { padding: 6px 15px; font-size: 0.9rem; }
             
             .modal-box { flex-direction: column; padding: 20px; }
-            .modal-left { width: 100%; max-width: 200px; margin: 0 auto 15px auto; }
+            .modal-left { width: 100%; max-width: 250px; margin: 0 auto 15px auto; }
             .modal-right { width: 100%; }
             .modal-name { font-size: 1.3rem; text-align: center; }
             .modal-info span.title { min-width: 100px; }
             .modal-info span.desc { max-width: calc(100% - 105px); }
         }
     </style>
+    <script>
+        // ป้องกันการคลิกขวาและการลากคลุม
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('dragstart', event => event.preventDefault());
+
+        window.setupGlitchLayers = function(src) {
+            const layers = document.querySelectorAll('.glitch-layer');
+            layers.forEach(layer => { layer.style.backgroundImage = `url('${src}')`; });
+        }
+
+        window.handleImageError = function(img) {
+            img.onerror = null; 
+            const fallbackSrc = 'https://i.ibb.co/9HM6dGQG/175-20260413000814.png';
+            img.src = fallbackSrc; 
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => window.setupGlitchLayers(fallbackSrc));
+            } else {
+                window.setupGlitchLayers(fallbackSrc);
+            }
+        };
+    </script>
 </head>
 <body class="screen-flicker">
 
@@ -381,7 +483,7 @@
             <div class="tv-turn-on"></div>
             <div id="logo-mover" class="logo-mover">
                 <div class="glitch-wrapper" id="glitch-wrapper">
-                    <img src="logo.png" id="main-logo" class="glitch-img" alt="Virelia Logo" onerror="handleImageError(this)">
+                    <img src="logo.png" id="main-logo" class="glitch-img" alt="Virelia Logo" onerror="window.handleImageError(this)">
                     <div class="glitch-layer glitch-layer-1"></div>
                     <div class="glitch-layer glitch-layer-2"></div>
                 </div>
@@ -390,6 +492,7 @@
             <div id="system-ui" class="system-ui">
                 <div class="top-bar">
                     <button class="nav-btn" id="nav-student">ข้อมูลนักเรียน</button>
+                    <button class="nav-btn" id="nav-account">บัญชีผู้ใช้</button>
                     <button class="nav-btn" id="nav-credit">เครดิต</button>
                 </div>
 
@@ -404,12 +507,18 @@
                 <div class="content-area" id="content-display"></div>
             </div>
 
-            <!-- MODAL รายละเอียด (อัปเดตหัวข้อตามข้อมูลจริง) -->
+            <!-- MODAL รายละเอียด -->
             <div class="modal-overlay" id="detail-modal">
                 <div class="modal-box" id="modal-content">
                     <button class="modal-close" id="close-modal">[X]</button>
                     <div class="modal-left">
-                        <img id="m-img" src="" alt="Profile">
+                        <!-- Wrapper สำหรับการวางหัวใจ -->
+                        <div class="modal-img-wrapper" id="m-img-wrapper">
+                            <img id="m-img" src="" alt="Profile">
+                            <!-- หัวใจจะโผล่มาที่นี่ด้วย JS -->
+                        </div>
+                        <button id="modal-like-btn" class="detail-btn action-btn" style="margin-top:15px;">❤️ กดชอบ (0)</button>
+                        <button id="modal-comment-toggle" class="detail-btn comment-toggle-btn">💬 คอมเมนต์ (0)</button>
                     </div>
                     <div class="modal-right">
                         <h2 class="modal-name" id="m-name">NAME</h2>
@@ -425,37 +534,89 @@
                             <p><span class="title">สิ่งที่เกลียด:</span> <span class="desc" id="m-dislikes"></span></p>
                             <p><span class="title">เอกลักษณ์:</span> <span class="desc" id="m-identity"></span></p>
                         </div>
+                        
+                        <!-- ช่องแสดงคอมเมนต์ -->
+                        <div class="comments-container" id="comments-section">
+                            <div class="comments-list" id="comments-list">
+                                <!-- รายการคอมเมนต์ -->
+                            </div>
+                            <div class="comment-input-area">
+                                <input type="text" id="comment-input" placeholder="พิมพ์ข้อความที่นี่..." autocomplete="off">
+                                <button id="send-comment-btn">ส่ง</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // ป้องกันการคลิกขวา (Right Click) ทั่วทั้งหน้าเว็บ
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        
-        // ป้องกันการลากคลุมหรือลากรูปภาพ (Drag Start)
-        document.addEventListener('dragstart', event => event.preventDefault());
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        function setupGlitchLayers(src) {
-            const layers = document.querySelectorAll('.glitch-layer');
-            layers.forEach(layer => { layer.style.backgroundImage = `url('${src}')`; });
+        let auth, db, currentUser, appId;
+        let userNickname = "";
+        let currentModalStudentId = null;
+        let isLikingMode = false;
+        
+        // ตัวแปรสำหรับยกเลิกการดึงข้อมูลเมื่อปิดหน้าต่าง
+        let unsubscribeLikes = null;
+        let unsubscribeComments = null;
+
+        // ระบบแจ้งเตือนแทน Alert
+        function showToast(message, color = "#ff3333") {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.borderColor = color;
+            toast.style.boxShadow = `0 0 15px ${color}88`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
-        window.handleImageError = function(img) {
-            img.onerror = null; 
-            const fallbackSrc = 'https://i.ibb.co/9HM6dGQG/175-20260413000814.png';
-            img.src = fallbackSrc; 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => setupGlitchLayers(fallbackSrc));
-            } else {
-                setupGlitchLayers(fallbackSrc);
-            }
-        };
+        // เชื่อมต่อฐานข้อมูล
+        if (typeof __firebase_config !== 'undefined') {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // ฐานข้อมูลนักเรียน (ข้อมูลจริงจากที่ให้มา)
-// ฐานข้อมูลนักเรียนและบุคลากร
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Firebase Auth Error:", error);
+                }
+            };
+            initAuth();
+
+            onAuthStateChanged(auth, async (user) => {
+                currentUser = user;
+                if (user) {
+                    // โหลดชื่อเล่นจากฐานข้อมูลส่วนตัว
+                    const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                    const snap = await getDoc(profileRef);
+                    if (snap.exists()) {
+                        userNickname = snap.data().nickname || "";
+                    }
+                    if (document.getElementById('nav-account').classList.contains('active')) {
+                        renderAccountTab();
+                    }
+                }
+            });
+        }
+
         const studentDatabase = {
             'gifted': {
                 theme: 'theme-gifted', roomName: 'Gifted',
@@ -515,138 +676,340 @@
                 ]
             }
         };
-        document.addEventListener('DOMContentLoaded', () => {
-            const startScreen = document.getElementById('start-screen');
-            const mainCrt = document.getElementById('main-crt');
-            const connectBtn = document.getElementById('connect-btn');
-            const btnGlitchWrapper = document.getElementById('btn-glitch-wrapper');
-            const logoMover = document.getElementById('logo-mover');
-            const logoWrapper = document.getElementById('glitch-wrapper');
-            const imgElement = document.getElementById('main-logo');
-            
-            const systemUi = document.getElementById('system-ui');
-            const navStudent = document.getElementById('nav-student');
-            const navCredit = document.getElementById('nav-credit');
-            const subNavRooms = document.getElementById('sub-nav-rooms');
-            const roomBtns = document.querySelectorAll('.room-btn');
-            const contentDisplay = document.getElementById('content-display');
-            
-            const modalOverlay = document.getElementById('detail-modal');
-            const modalContent = document.getElementById('modal-content');
-            const closeModal = document.getElementById('close-modal');
 
-            // ใช้ Fallback รูปเมื่อโลโก้โหลดไม่ผ่าน
-            if(imgElement.complete) { setupGlitchLayers(imgElement.src); }
+        const startScreen = document.getElementById('start-screen');
+        const mainCrt = document.getElementById('main-crt');
+        const connectBtn = document.getElementById('connect-btn');
+        const btnGlitchWrapper = document.getElementById('btn-glitch-wrapper');
+        const logoMover = document.getElementById('logo-mover');
+        const logoWrapper = document.getElementById('glitch-wrapper');
+        
+        const systemUi = document.getElementById('system-ui');
+        const navStudent = document.getElementById('nav-student');
+        const navAccount = document.getElementById('nav-account');
+        const navCredit = document.getElementById('nav-credit');
+        const subNavRooms = document.getElementById('sub-nav-rooms');
+        const roomBtns = document.querySelectorAll('.room-btn');
+        const contentDisplay = document.getElementById('content-display');
+        
+        const modalOverlay = document.getElementById('detail-modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeModal = document.getElementById('close-modal');
+        
+        const modalImgWrapper = document.getElementById('m-img-wrapper');
+        const modalLikeBtn = document.getElementById('modal-like-btn');
+        const modalCommentToggle = document.getElementById('modal-comment-toggle');
+        const commentsSection = document.getElementById('comments-section');
+        const commentsList = document.getElementById('comments-list');
+        const commentInput = document.getElementById('comment-input');
+        const sendCommentBtn = document.getElementById('send-comment-btn');
 
-            let btnGlitchTimeout;
-            function triggerBtnGlitch() {
-                btnGlitchWrapper.classList.add('is-glitching');
+        let btnGlitchTimeout;
+        function triggerBtnGlitch() {
+            btnGlitchWrapper.classList.add('is-glitching');
+            setTimeout(() => {
+                btnGlitchWrapper.classList.remove('is-glitching');
+                btnGlitchTimeout = setTimeout(triggerBtnGlitch, Math.random() * 3000 + 1000);
+            }, Math.random() * 200 + 100);
+        }
+        triggerBtnGlitch();
+
+        function triggerLogoGlitch() {
+            logoWrapper.classList.add('is-glitching');
+            setTimeout(() => {
+                logoWrapper.classList.remove('is-glitching');
+                setTimeout(triggerLogoGlitch, Math.random() * 3500 + 1500);
+            }, Math.random() * 300 + 100);
+        }
+
+        connectBtn.addEventListener('click', () => {
+            clearTimeout(btnGlitchTimeout);
+            startScreen.style.display = 'none';
+            mainCrt.style.display = 'block';
+            setTimeout(() => {
+                triggerLogoGlitch();
                 setTimeout(() => {
-                    btnGlitchWrapper.classList.remove('is-glitching');
-                    btnGlitchTimeout = setTimeout(triggerBtnGlitch, Math.random() * 3000 + 1000);
-                }, Math.random() * 200 + 100);
-            }
-            triggerBtnGlitch();
+                    logoMover.classList.add('corner-mode');
+                    logoWrapper.classList.add('is-spinning');
+                    setTimeout(() => { systemUi.classList.add('visible'); }, 1500);
+                }, 2000);
+            }, 1500);
+        });
 
-            function triggerLogoGlitch() {
-                logoWrapper.classList.add('is-glitching');
-                setTimeout(() => {
-                    logoWrapper.classList.remove('is-glitching');
-                    setTimeout(triggerLogoGlitch, Math.random() * 3500 + 1500);
-                }, Math.random() * 300 + 100);
-            }
+        // ---------------- TAB: ข้อมูลนักเรียน ----------------
+        navStudent.addEventListener('click', () => {
+            navStudent.classList.add('active');
+            navAccount.classList.remove('active');
+            navCredit.classList.remove('active');
+            subNavRooms.classList.add('active');
+            contentDisplay.innerHTML = '<p style="color:#aaa; font-style:italic; margin-top:50px;">กรุณาเลือกห้องเพื่อดูข้อมูลนักเรียน...</p>';
+            roomBtns.forEach(b => b.classList.remove('active'));
+        });
 
-            connectBtn.addEventListener('click', () => {
-                clearTimeout(btnGlitchTimeout);
-                startScreen.style.display = 'none';
-                mainCrt.style.display = 'block';
-                
-                setTimeout(() => {
-                    triggerLogoGlitch();
-                    setTimeout(() => {
-                        logoMover.classList.add('corner-mode');
-                        logoWrapper.classList.add('is-spinning');
-                        setTimeout(() => { systemUi.classList.add('visible'); }, 1500);
-                    }, 2000);
-                }, 1500);
-            });
+        // ---------------- TAB: เครดิต ----------------
+        navCredit.addEventListener('click', () => {
+            navCredit.classList.add('active');
+            navStudent.classList.remove('active');
+            navAccount.classList.remove('active');
+            subNavRooms.classList.remove('active');
+            contentDisplay.innerHTML = `
+                <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
+                    <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
+                    <p style="color: #ccc; line-height: 2;">System Version: 3.0.0<br>Features: Real-time Comments & Likes<br>Status: SECURE</p>
+                </div>
+            `;
+        });
 
-            navStudent.addEventListener('click', () => {
-                navStudent.classList.add('active');
-                navCredit.classList.remove('active');
-                subNavRooms.classList.add('active');
-                contentDisplay.innerHTML = '<p style="color:#aaa; font-style:italic; margin-top:50px;">กรุณาเลือกห้องเพื่อดูข้อมูลนักเรียน...</p>';
-                roomBtns.forEach(b => b.classList.remove('active'));
-            });
-
-            navCredit.addEventListener('click', () => {
-                navCredit.classList.add('active');
-                navStudent.classList.remove('active');
-                subNavRooms.classList.remove('active');
-                contentDisplay.innerHTML = `
-                    <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
-                        <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
-                        <p style="color: #ccc; line-height: 2;">System Version: 2.1.00<br>Updated on: May 2026<br>Status: SECURE</p>
+        // ---------------- TAB: บัญชีผู้ใช้ (Account) ----------------
+        function renderAccountTab() {
+            contentDisplay.innerHTML = `
+                <div style="width: 100%; text-align: left; padding: 0 20px; margin-bottom: 20px;">
+                    <h2 style="color: #00FFFF; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top:0;">SYSTEM ACCOUNT</h2>
+                    <p style="color: #ccc;"><b>STATUS:</b> <span style="color:#00FF00">${currentUser ? 'AUTHENTICATED' : 'OFFLINE'}</span></p>
+                    <p style="color: #ccc;"><b>USER ID:</b> ${currentUser ? currentUser.uid : 'N/A'}</p>
+                    
+                    <div class="account-input-group">
+                        <label style="color:#00FFFF; font-weight:bold;">ชื่อเล่นที่ใช้แสดงผล:</label>
+                        <input type="text" id="nickname-input" placeholder="กรอกชื่อเล่นของคุณ..." value="${userNickname}">
+                        <button id="save-nickname-btn">บันทึกชื่อเล่น</button>
                     </div>
-                `;
+                </div>
+            `;
+            
+            document.getElementById('save-nickname-btn').addEventListener('click', async () => {
+                if (!currentUser) return;
+                const newName = document.getElementById('nickname-input').value.trim();
+                if (newName.length < 2) {
+                    showToast("⚠️ ชื่อเล่นต้องมีอย่างน้อย 2 ตัวอักษร");
+                    return;
+                }
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info'), { nickname: newName });
+                    userNickname = newName;
+                    showToast("✅ บันทึกชื่อเล่นสำเร็จ!", "#00FF00");
+                } catch (e) {
+                    showToast("⚠️ เกิดข้อผิดพลาดในการบันทึก");
+                }
             });
+        }
 
-            roomBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    roomBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+        navAccount.addEventListener('click', () => {
+            navAccount.classList.add('active');
+            navStudent.classList.remove('active');
+            navCredit.classList.remove('active');
+            subNavRooms.classList.remove('active');
+            renderAccountTab();
+        });
 
-                    const roomId = btn.getAttribute('data-room');
-                    const roomData = studentDatabase[roomId];
-                    contentDisplay.innerHTML = '';
+        // ---------------- ปุ่มเลือกห้อง ----------------
+        roomBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                roomBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
 
-                    roomData.students.forEach((student, index) => {
-                        const card = document.createElement('div');
-                        card.className = `profile-card ${roomData.theme}`;
-                        card.style.animationDelay = `${index * 0.1}s`; 
-                        
-                        // ใช้ภาพสำรองหากโหลดไฟล์ G1.png, A1.png ไม่ขึ้น
-                        card.innerHTML = `
-                            <div class="profile-img-container">
-                                <img src="${student.img}" class="profile-img" alt="${student.name}" onerror="this.onerror=null; this.src='https://placehold.co/300x400/222/555?text=NO+IMAGE';">
-                            </div>
-                            <div class="profile-name">${student.name}</div>
-                            <button class="detail-btn">รายละเอียด</button>
-                        `;
+                const roomId = btn.getAttribute('data-room');
+                const roomData = studentDatabase[roomId];
+                contentDisplay.innerHTML = '';
 
-                        card.querySelector('.detail-btn').addEventListener('click', () => {
-                            openModal(student, roomData.theme, roomData.roomName);
-                        });
+                roomData.students.forEach((student, index) => {
+                    const card = document.createElement('div');
+                    card.className = `profile-card ${roomData.theme}`;
+                    card.style.animationDelay = `${index * 0.1}s`; 
+                    
+                    card.innerHTML = `
+                        <div class="profile-img-container">
+                            <img src="${student.img}" class="profile-img" alt="${student.name}" onerror="this.onerror=null; this.src='https://placehold.co/300x400/222/555?text=NO+IMAGE';">
+                        </div>
+                        <div class="profile-name">${student.name}</div>
+                        <button class="detail-btn">รายละเอียด</button>
+                    `;
 
-                        contentDisplay.appendChild(card);
+                    card.querySelector('.detail-btn').addEventListener('click', () => {
+                        openModal(student, roomData.theme, roomData.roomName);
                     });
+
+                    contentDisplay.appendChild(card);
                 });
             });
+        });
 
-            function openModal(studentData, themeClass, roomNameStr) {
-                // ดึงภาพ ถ้าโหลดไม่สำเร็จใช้ภาพ NO IMAGE
-                const mImg = document.getElementById('m-img');
-                mImg.src = studentData.img;
-                mImg.onerror = function() { this.src = 'https://placehold.co/300x400/222/555?text=NO+IMAGE'; };
+        // ---------------- ระบบ การจัดการ Modal ----------------
+        function openModal(studentData, themeClass, roomNameStr) {
+            currentModalStudentId = studentData.id;
+            isLikingMode = false;
+            modalImgWrapper.classList.remove('liking-mode');
+            
+            // ยกเลิก Listeners เดิม
+            if(unsubscribeLikes) unsubscribeLikes();
+            if(unsubscribeComments) unsubscribeComments();
+
+            // ลบหัวใจเก่าทิ้งให้หมด
+            document.querySelectorAll('.heart-marker').forEach(e => e.remove());
+            commentsList.innerHTML = '<p style="color:#666; text-align:center;">กำลังโหลดคอมเมนต์...</p>';
+            commentsSection.classList.remove('active');
+            modalCommentToggle.classList.remove('active');
+            modalLikeBtn.classList.remove('active');
+            modalLikeBtn.innerHTML = `❤️ กดชอบ (0)`;
+
+            const mImg = document.getElementById('m-img');
+            mImg.src = studentData.img;
+            mImg.onerror = function() { this.src = 'https://placehold.co/300x400/222/555?text=NO+IMAGE'; };
+            
+            document.getElementById('m-name').innerHTML = studentData.name;
+            document.getElementById('m-age').innerHTML = studentData.age;
+            document.getElementById('m-gender').innerHTML = studentData.gender;
+            document.getElementById('m-role').innerHTML = studentData.role;
+            document.getElementById('m-room').innerHTML = roomNameStr;
+            document.getElementById('m-skill').innerHTML = studentData.skill;
+            document.getElementById('m-body').innerHTML = studentData.body;
+            document.getElementById('m-personality').innerHTML = studentData.personality;
+            document.getElementById('m-likes').innerHTML = studentData.likes;
+            document.getElementById('m-dislikes').innerHTML = studentData.dislikes;
+            document.getElementById('m-identity').innerHTML = studentData.identity;
+
+            modalContent.className = `modal-box ${themeClass}`;
+            modalOverlay.classList.add('active');
+
+            if(currentUser && db) {
+                // โหลด หัวใจ (Likes) จากส่วนกลาง (Public)
+                const likesRef = collection(db, 'artifacts', appId, 'public', 'data', `likes_${currentModalStudentId}`);
+                unsubscribeLikes = onSnapshot(likesRef, (snapshot) => {
+                    // ลบหัวใจบนภาพออกทั้งหมดเพื่อวาดใหม่
+                    document.querySelectorAll('.heart-marker').forEach(e => e.remove());
+                    let count = snapshot.docs.length;
+                    modalLikeBtn.innerHTML = `❤️ กดชอบ (${count})`;
+                    
+                    snapshot.docs.forEach(doc => {
+                        const data = doc.data();
+                        const heart = document.createElement('div');
+                        heart.className = 'heart-marker';
+                        heart.style.left = `${data.x}%`;
+                        heart.style.top = `${data.y}%`;
+                        heart.innerHTML = `❤️<div class="nickname">${data.nickname}</div>`;
+                        modalImgWrapper.appendChild(heart);
+                    });
+                }, error => console.error(error));
+
+                // โหลด คอมเมนต์ (Comments)
+                const commentsRef = collection(db, 'artifacts', appId, 'public', 'data', `comments_${currentModalStudentId}`);
+                unsubscribeComments = onSnapshot(commentsRef, (snapshot) => {
+                    // เรียงลำดับตามเวลาใน Memory เพื่อหลีกเลี่ยงการสร้าง Index
+                    const docs = snapshot.docs.map(d => d.data()).sort((a, b) => a.timestamp - b.timestamp);
+                    modalCommentToggle.innerHTML = `💬 คอมเมนต์ (${docs.length})`;
+                    
+                    if(docs.length === 0) {
+                        commentsList.innerHTML = '<p style="color:#666; text-align:center; margin-top:10px;">ยังไม่มีคอมเมนต์ เป็นคนแรกเลยสิ!</p>';
+                    } else {
+                        commentsList.innerHTML = '';
+                        docs.forEach(data => {
+                            const cItem = document.createElement('div');
+                            cItem.className = 'comment-item';
+                            cItem.innerHTML = `<span class="comment-name">@${data.nickname}</span><span class="comment-text">${data.text}</span>`;
+                            commentsList.appendChild(cItem);
+                        });
+                        commentsList.scrollTop = commentsList.scrollHeight; // เลื่อนลงล่างสุด
+                    }
+                }, error => console.error(error));
+            }
+        }
+
+        // กดปุ่ม Like
+        modalLikeBtn.addEventListener('click', () => {
+            if(!userNickname) {
+                showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนกดชอบ");
+                return;
+            }
+            if(!isLikingMode) {
+                isLikingMode = true;
+                modalLikeBtn.classList.add('active');
+                modalImgWrapper.classList.add('liking-mode');
+                showToast("👉 คลิกที่ตำแหน่งใดก็ได้ของรูป เพื่อวางหัวใจ!", "#FFD700");
+            } else {
+                isLikingMode = false;
+                modalLikeBtn.classList.remove('active');
+                modalImgWrapper.classList.remove('liking-mode');
+            }
+        });
+
+        // กดที่รูปภาพเพื่อแปะหัวใจ
+        document.getElementById('m-img').addEventListener('click', async (e) => {
+            if(!isLikingMode || !currentUser) return;
+
+            // คำนวณตำแหน่ง X Y เป็นเปอร์เซ็นต์
+            const rect = e.target.getBoundingClientRect();
+            const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+            const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+
+            try {
+                const likesRef = collection(db, 'artifacts', appId, 'public', 'data', `likes_${currentModalStudentId}`);
+                await addDoc(likesRef, {
+                    uid: currentUser.uid,
+                    nickname: userNickname,
+                    x: xPercent,
+                    y: yPercent,
+                    timestamp: Date.now()
+                });
                 
-                document.getElementById('m-name').textContent = studentData.name;
-                document.getElementById('m-age').textContent = studentData.age;
-                document.getElementById('m-gender').textContent = studentData.gender;
-                document.getElementById('m-role').textContent = studentData.role;
-                document.getElementById('m-room').textContent = roomNameStr;
-                document.getElementById('m-skill').textContent = studentData.skill;
-                document.getElementById('m-body').textContent = studentData.body;
-                document.getElementById('m-personality').textContent = studentData.personality;
-                document.getElementById('m-likes').textContent = studentData.likes;
-                document.getElementById('m-dislikes').textContent = studentData.dislikes;
-                document.getElementById('m-identity').textContent = studentData.identity;
-
-                modalContent.className = `modal-box ${themeClass}`;
-                modalOverlay.classList.add('active');
+                showToast("❤️ แปะหัวใจสำเร็จ!", "#ff3333");
+            } catch (err) {
+                showToast("⚠️ เกิดข้อผิดพลาด ไม่สามารถส่งข้อมูลได้");
             }
 
-            closeModal.addEventListener('click', () => { modalOverlay.classList.remove('active'); });
-            modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) { modalOverlay.classList.remove('active'); }});
+            // ออกจากโหมด Liking ทันที
+            isLikingMode = false;
+            modalLikeBtn.classList.remove('active');
+            modalImgWrapper.classList.remove('liking-mode');
+        });
+
+        // เปิด/ปิด ช่องคอมเมนต์
+        modalCommentToggle.addEventListener('click', () => {
+            commentsSection.classList.toggle('active');
+            modalCommentToggle.classList.toggle('active');
+            if(commentsSection.classList.contains('active')) {
+                commentsList.scrollTop = commentsList.scrollHeight;
+            }
+        });
+
+        // กดปุ่มส่งคอมเมนต์
+        sendCommentBtn.addEventListener('click', async () => {
+            if(!currentUser) return;
+            if(!userNickname) {
+                showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนคอมเมนต์");
+                return;
+            }
+
+            const text = commentInput.value.trim();
+            if(text.length === 0) return;
+
+            // บังคับเคลียร์ช่องทันทีที่กดส่ง (ลดการส่งเบิ้ล)
+            commentInput.value = '';
+
+            try {
+                const commentsRef = collection(db, 'artifacts', appId, 'public', 'data', `comments_${currentModalStudentId}`);
+                await addDoc(commentsRef, {
+                    uid: currentUser.uid,
+                    nickname: userNickname,
+                    text: text,
+                    timestamp: Date.now()
+                });
+            } catch (err) {
+                showToast("⚠️ ส่งคอมเมนต์ไม่สำเร็จ");
+            }
+        });
+        
+        // กด Enter เพื่อส่งคอมเมนต์
+        commentInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendCommentBtn.click();
+        });
+
+        // ปิดหน้าต่าง
+        closeModal.addEventListener('click', () => { 
+            modalOverlay.classList.remove('active'); 
+        });
+        modalOverlay.addEventListener('click', (e) => { 
+            if(e.target === modalOverlay) { 
+                modalOverlay.classList.remove('active'); 
+            }
         });
     </script>
 </body>
