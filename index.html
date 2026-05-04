@@ -551,15 +551,18 @@
         </div>
     </div>
 
+    <!-- โค้ดส่วนจัดการ Firebase & JavaScript หลัก (เปลี่ยนเป็น type="module") -->
     <script type="module">
+        // นำเข้าโมดูล Firebase (เวอร์ชัน 11.6.1 ตามมาตรฐานระบบ)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let auth, db, currentUser, appId;
         let userNickname = "";
         let currentModalStudentId = null;
         let isLikingMode = false;
+        let userFavorites = [];
         
         // ตัวแปรสำหรับยกเลิกการดึงข้อมูลเมื่อปิดหน้าต่าง
         let unsubscribeLikes = null;
@@ -580,26 +583,32 @@
             }, 3000);
         }
 
-        // เชื่อมต่อฐานข้อมูล
-        if (typeof __firebase_config !== 'undefined') {
-            const firebaseConfig = JSON.parse(__firebase_config);
+        // ==========================================
+        // FIREBASE INITIALIZATION (สำหรับนำไปโฮสต์บน Github Pages)
+        // ==========================================
+        
+        // 👉 1. นำค่า Config จาก Firebase ของคุณ มาแทนที่ก้อนข้อมูลด้านล่างนี้ทั้งหมด 👈
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        try {
+            // เริ่มต้นระบบ Firebase จาก Config ของคุณ
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            appId = "virelia_main_db"; // ตั้งชื่อจำลอง เพื่อรักษาโครงสร้างฐานข้อมูลเดิมเอาไว้
 
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Firebase Auth Error:", error);
-                }
-            };
-            initAuth();
+            // ล็อคอินเข้าสู่ระบบแบบไม่ระบุตัวตนโดยอัตโนมัติ (Anonymous)
+            signInAnonymously(auth).catch((error) => {
+                console.error("Firebase Auth Error:", error);
+                showToast("⚠️ ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "#ff0000");
+            });
 
             onAuthStateChanged(auth, async (user) => {
                 currentUser = user;
@@ -610,11 +619,27 @@
                     if (snap.exists()) {
                         userNickname = snap.data().nickname || "";
                     }
+
+                    // สร้าง Listener รอรับข้อมูลที่เคยกดบันทึกไว้ (Favorites)
+                    const favRef = collection(db, 'artifacts', appId, 'users', user.uid, 'favorites');
+                    onSnapshot(favRef, (snapshot) => {
+                        userFavorites = snapshot.docs.map(doc => doc.id);
+                        updateModalFavBtnUI(); 
+                        
+                        if (document.getElementById('nav-account').classList.contains('active')) {
+                            renderAccountTab();
+                        }
+                    }, (error) => {
+                        console.error("Error Fetching Data:", error);
+                    });
+
                     if (document.getElementById('nav-account').classList.contains('active')) {
                         renderAccountTab();
                     }
                 }
             });
+        } catch (e) {
+            console.warn("กรุณาตั้งค่า Firebase Config ให้ถูกต้องก่อนใช้งานระบบฐานข้อมูล: ", e);
         }
 
         const studentDatabase = {
