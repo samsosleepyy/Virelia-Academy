@@ -329,7 +329,6 @@
 
         .modal-left { width: 40%; flex-shrink: 0; display: flex; flex-direction: column; position: relative;}
         
-        /* แก้ไขให้รูปภาพใน Modal กดได้และเตรียมแปะหัวใจ */
         .modal-img-wrapper { position: relative; width: 100%; display: inline-block; overflow: hidden; border: 1px solid var(--theme-color); cursor: default; }
         .modal-img-wrapper.liking-mode { cursor: crosshair; border-color: #FFD700; box-shadow: 0 0 15px #FFD700; }
         #m-img { width: 100%; display: block; filter: grayscale(0.2); pointer-events: auto; -webkit-user-drag: none; }
@@ -554,9 +553,10 @@
     <!-- โค้ดส่วนจัดการ Firebase & JavaScript หลัก (เปลี่ยนเป็น type="module") -->
     <script type="module">
         // นำเข้าโมดูล Firebase (เวอร์ชัน 11.6.1 ตามมาตรฐานระบบ)
+        // เปลี่ยนมาใช้ Firebase Realtime Database
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, set, push, remove, onValue, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         let auth, db, currentUser, appId;
         let userNickname = "";
@@ -567,6 +567,7 @@
         // ตัวแปรสำหรับยกเลิกการดึงข้อมูลเมื่อปิดหน้าต่าง
         let unsubscribeLikes = null;
         let unsubscribeComments = null;
+        let unsubscribeFavs = null;
 
         // ระบบแจ้งเตือนแทน Alert
         function showToast(message, color = "#ff3333") {
@@ -584,27 +585,27 @@
         }
 
         // ==========================================
-        // FIREBASE INITIALIZATION (สำหรับนำไปโฮสต์บน Github Pages)
+        // FIREBASE INITIALIZATION (Realtime Database)
         // ==========================================
         
-        // 👉 1. นำค่า Config จาก Firebase ของคุณ มาแทนที่ก้อนข้อมูลด้านล่างนี้ทั้งหมด 👈
+        // 👉 1. นำค่า Config จาก Firebase มาวางที่นี่ 👈
+        // ⚠️ ต้องมี databaseURL แนบมาด้วยเสมอสำหรับการใช้งาน Realtime Database
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            authDomain: "moonweb-5b0c3.firebaseapp.com",
+            databaseURL: "https://moonweb-5b0c3-default-rtdb.firebaseio.com", // <-- ต้องใส่บรรทัดนี้
+            projectId: "moonweb-5b0c3",
+            storageBucket: "moonweb-5b0c3.appspot.com",
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
             appId: "YOUR_APP_ID"
         };
 
         try {
-            // เริ่มต้นระบบ Firebase จาก Config ของคุณ
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app);
-            appId = "virelia_main_db"; // ตั้งชื่อจำลอง เพื่อรักษาโครงสร้างฐานข้อมูลเดิมเอาไว้
+            db = getDatabase(app); // เรียกใช้ Realtime Database
+            appId = "virelia_main_db"; 
 
-            // ล็อคอินเข้าสู่ระบบแบบไม่ระบุตัวตนโดยอัตโนมัติ (Anonymous)
             signInAnonymously(auth).catch((error) => {
                 console.error("Firebase Auth Error:", error);
                 showToast("⚠️ ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "#ff0000");
@@ -613,17 +614,20 @@
             onAuthStateChanged(auth, async (user) => {
                 currentUser = user;
                 if (user) {
-                    // โหลดชื่อเล่นจากฐานข้อมูลส่วนตัว
-                    const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                    const snap = await getDoc(profileRef);
+                    // โหลดชื่อเล่น
+                    const profileRef = ref(db, `artifacts/${appId}/users/${user.uid}/profile/info`);
+                    const snap = await get(profileRef);
                     if (snap.exists()) {
-                        userNickname = snap.data().nickname || "";
+                        userNickname = snap.val().nickname || "";
                     }
 
-                    // สร้าง Listener รอรับข้อมูลที่เคยกดบันทึกไว้ (Favorites)
-                    const favRef = collection(db, 'artifacts', appId, 'users', user.uid, 'favorites');
-                    onSnapshot(favRef, (snapshot) => {
-                        userFavorites = snapshot.docs.map(doc => doc.id);
+                    // สร้าง Listener สำหรับ Favorites
+                    const favRef = ref(db, `artifacts/${appId}/users/${user.uid}/favorites`);
+                    unsubscribeFavs = onValue(favRef, (snapshot) => {
+                        userFavorites = [];
+                        snapshot.forEach((childSnapshot) => {
+                            userFavorites.push(childSnapshot.key);
+                        });
                         updateModalFavBtnUI(); 
                         
                         if (document.getElementById('nav-account').classList.contains('active')) {
@@ -639,7 +643,7 @@
                 }
             });
         } catch (e) {
-            console.warn("กรุณาตั้งค่า Firebase Config ให้ถูกต้องก่อนใช้งานระบบฐานข้อมูล: ", e);
+            console.warn("กรุณาตั้งค่า Firebase Config ให้ถูกต้องก่อนใช้งาน: ", e);
         }
 
         const studentDatabase = {
@@ -702,6 +706,14 @@
             }
         };
 
+        function getStudentById(searchId) {
+            for (let r in studentDatabase) {
+                let found = studentDatabase[r].students.find(s => s.id === searchId);
+                if (found) return { student: found, theme: studentDatabase[r].theme, roomName: studentDatabase[r].roomName };
+            }
+            return null;
+        }
+
         const startScreen = document.getElementById('start-screen');
         const mainCrt = document.getElementById('main-crt');
         const connectBtn = document.getElementById('connect-btn');
@@ -720,6 +732,7 @@
         const modalOverlay = document.getElementById('detail-modal');
         const modalContent = document.getElementById('modal-content');
         const closeModal = document.getElementById('close-modal');
+        const modalFavBtn = document.getElementById('modal-fav-btn');
         
         const modalImgWrapper = document.getElementById('m-img-wrapper');
         const modalLikeBtn = document.getElementById('modal-like-btn');
@@ -761,7 +774,6 @@
             }, 1500);
         });
 
-        // ---------------- TAB: ข้อมูลนักเรียน ----------------
         navStudent.addEventListener('click', () => {
             navStudent.classList.add('active');
             navAccount.classList.remove('active');
@@ -771,7 +783,6 @@
             roomBtns.forEach(b => b.classList.remove('active'));
         });
 
-        // ---------------- TAB: เครดิต ----------------
         navCredit.addEventListener('click', () => {
             navCredit.classList.add('active');
             navStudent.classList.remove('active');
@@ -780,12 +791,11 @@
             contentDisplay.innerHTML = `
                 <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
                     <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
-                    <p style="color: #ccc; line-height: 2;">System Version: 3.0.0<br>Features: Real-time Comments & Likes<br>Status: SECURE</p>
+                    <p style="color: #ccc; line-height: 2;">System Version: 3.1.0<br>Powered by: Firebase Realtime DB<br>Status: SECURE</p>
                 </div>
             `;
         });
 
-        // ---------------- TAB: บัญชีผู้ใช้ (Account) ----------------
         function renderAccountTab() {
             contentDisplay.innerHTML = `
                 <div style="width: 100%; text-align: left; padding: 0 20px; margin-bottom: 20px;">
@@ -798,6 +808,7 @@
                         <input type="text" id="nickname-input" placeholder="กรอกชื่อเล่นของคุณ..." value="${userNickname}">
                         <button id="save-nickname-btn">บันทึกชื่อเล่น</button>
                     </div>
+                    <h3 style="color: #fff; margin-top: 30px;">นักเรียนที่คุณบันทึกไว้ (FAVORITES)</h3>
                 </div>
             `;
             
@@ -809,12 +820,37 @@
                     return;
                 }
                 try {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info'), { nickname: newName });
+                    await set(ref(db, `artifacts/${appId}/users/${currentUser.uid}/profile/info`), { nickname: newName });
                     userNickname = newName;
                     showToast("✅ บันทึกชื่อเล่นสำเร็จ!", "#00FF00");
                 } catch (e) {
                     showToast("⚠️ เกิดข้อผิดพลาดในการบันทึก");
                 }
+            });
+
+            if (userFavorites.length === 0) {
+                contentDisplay.innerHTML += `<p style="color:#aaa; font-style:italic; width: 100%; text-align: center;">ยังไม่มีข้อมูลที่คุณบันทึกไว้...</p>`;
+                return;
+            }
+
+            userFavorites.forEach((favId, index) => {
+                const data = getStudentById(favId);
+                if (!data) return;
+                
+                const card = document.createElement('div');
+                card.className = `profile-card ${data.theme}`;
+                card.style.animationDelay = `${index * 0.1}s`; 
+                card.innerHTML = `
+                    <div class="profile-img-container">
+                        <img src="${data.student.img}" class="profile-img" alt="${data.student.name}" onerror="this.onerror=null; this.src='https://placehold.co/300x400/222/555?text=NO+IMAGE';">
+                    </div>
+                    <div class="profile-name">${data.student.name}</div>
+                    <button class="detail-btn">รายละเอียด</button>
+                `;
+                card.querySelector('.detail-btn').addEventListener('click', () => {
+                    openModal(data.student, data.theme, data.roomName);
+                });
+                contentDisplay.appendChild(card);
             });
         }
 
@@ -826,7 +862,6 @@
             renderAccountTab();
         });
 
-        // ---------------- ปุ่มเลือกห้อง ----------------
         roomBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 roomBtns.forEach(b => b.classList.remove('active'));
@@ -858,17 +893,25 @@
             });
         });
 
-        // ---------------- ระบบ การจัดการ Modal ----------------
+        function updateModalFavBtnUI() {
+            if (!currentModalStudentId || !modalFavBtn) return;
+            if (userFavorites.includes(currentModalStudentId)) {
+                modalFavBtn.classList.add('active');
+                modalFavBtn.textContent = '★ บันทึกข้อมูลแล้ว (ยกเลิก)';
+            } else {
+                modalFavBtn.classList.remove('active');
+                modalFavBtn.textContent = '⭐ บันทึกข้อมูล';
+            }
+        }
+
         function openModal(studentData, themeClass, roomNameStr) {
             currentModalStudentId = studentData.id;
             isLikingMode = false;
             modalImgWrapper.classList.remove('liking-mode');
             
-            // ยกเลิก Listeners เดิม
             if(unsubscribeLikes) unsubscribeLikes();
             if(unsubscribeComments) unsubscribeComments();
 
-            // ลบหัวใจเก่าทิ้งให้หมด
             document.querySelectorAll('.heart-marker').forEach(e => e.remove());
             commentsList.innerHTML = '<p style="color:#666; text-align:center;">กำลังโหลดคอมเมนต์...</p>';
             commentsSection.classList.remove('active');
@@ -893,19 +936,19 @@
             document.getElementById('m-identity').innerHTML = studentData.identity;
 
             modalContent.className = `modal-box ${themeClass}`;
+            updateModalFavBtnUI();
             modalOverlay.classList.add('active');
 
             if(currentUser && db) {
-                // โหลด หัวใจ (Likes) จากส่วนกลาง (Public)
-                const likesRef = collection(db, 'artifacts', appId, 'public', 'data', `likes_${currentModalStudentId}`);
-                unsubscribeLikes = onSnapshot(likesRef, (snapshot) => {
-                    // ลบหัวใจบนภาพออกทั้งหมดเพื่อวาดใหม่
+                // Realtime DB listener สำหรับหัวใจ
+                const likesRef = ref(db, `artifacts/${appId}/public/data/likes_${currentModalStudentId}`);
+                unsubscribeLikes = onValue(likesRef, (snapshot) => {
                     document.querySelectorAll('.heart-marker').forEach(e => e.remove());
-                    let count = snapshot.docs.length;
+                    let count = snapshot.size;
                     modalLikeBtn.innerHTML = `❤️ กดชอบ (${count})`;
                     
-                    snapshot.docs.forEach(doc => {
-                        const data = doc.data();
+                    snapshot.forEach(childSnapshot => {
+                        const data = childSnapshot.val();
                         const heart = document.createElement('div');
                         heart.className = 'heart-marker';
                         heart.style.left = `${data.x}%`;
@@ -915,11 +958,13 @@
                     });
                 }, error => console.error(error));
 
-                // โหลด คอมเมนต์ (Comments)
-                const commentsRef = collection(db, 'artifacts', appId, 'public', 'data', `comments_${currentModalStudentId}`);
-                unsubscribeComments = onSnapshot(commentsRef, (snapshot) => {
-                    // เรียงลำดับตามเวลาใน Memory เพื่อหลีกเลี่ยงการสร้าง Index
-                    const docs = snapshot.docs.map(d => d.data()).sort((a, b) => a.timestamp - b.timestamp);
+                // Realtime DB listener สำหรับคอมเมนต์
+                const commentsRef = ref(db, `artifacts/${appId}/public/data/comments_${currentModalStudentId}`);
+                unsubscribeComments = onValue(commentsRef, (snapshot) => {
+                    const docs = [];
+                    snapshot.forEach(childSnapshot => { docs.push(childSnapshot.val()); });
+                    docs.sort((a, b) => a.timestamp - b.timestamp);
+                    
                     modalCommentToggle.innerHTML = `💬 คอมเมนต์ (${docs.length})`;
                     
                     if(docs.length === 0) {
@@ -932,13 +977,26 @@
                             cItem.innerHTML = `<span class="comment-name">@${data.nickname}</span><span class="comment-text">${data.text}</span>`;
                             commentsList.appendChild(cItem);
                         });
-                        commentsList.scrollTop = commentsList.scrollHeight; // เลื่อนลงล่างสุด
+                        commentsList.scrollTop = commentsList.scrollHeight;
                     }
                 }, error => console.error(error));
             }
         }
 
-        // กดปุ่ม Like
+        modalFavBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const docRef = ref(db, `artifacts/${appId}/users/${currentUser.uid}/favorites/${currentModalStudentId}`);
+            try {
+                if (userFavorites.includes(currentModalStudentId)) {
+                    await remove(docRef);
+                } else {
+                    await set(docRef, { savedAt: Date.now() });
+                }
+            } catch (error) {
+                console.error("Firebase Database Error:", error);
+            }
+        });
+
         modalLikeBtn.addEventListener('click', () => {
             if(!userNickname) {
                 showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนกดชอบ");
@@ -956,18 +1014,16 @@
             }
         });
 
-        // กดที่รูปภาพเพื่อแปะหัวใจ
         document.getElementById('m-img').addEventListener('click', async (e) => {
             if(!isLikingMode || !currentUser) return;
 
-            // คำนวณตำแหน่ง X Y เป็นเปอร์เซ็นต์
             const rect = e.target.getBoundingClientRect();
             const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
             const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
             try {
-                const likesRef = collection(db, 'artifacts', appId, 'public', 'data', `likes_${currentModalStudentId}`);
-                await addDoc(likesRef, {
+                const likesRef = ref(db, `artifacts/${appId}/public/data/likes_${currentModalStudentId}`);
+                await push(likesRef, {
                     uid: currentUser.uid,
                     nickname: userNickname,
                     x: xPercent,
@@ -980,13 +1036,11 @@
                 showToast("⚠️ เกิดข้อผิดพลาด ไม่สามารถส่งข้อมูลได้");
             }
 
-            // ออกจากโหมด Liking ทันที
             isLikingMode = false;
             modalLikeBtn.classList.remove('active');
             modalImgWrapper.classList.remove('liking-mode');
         });
 
-        // เปิด/ปิด ช่องคอมเมนต์
         modalCommentToggle.addEventListener('click', () => {
             commentsSection.classList.toggle('active');
             modalCommentToggle.classList.toggle('active');
@@ -995,7 +1049,6 @@
             }
         });
 
-        // กดปุ่มส่งคอมเมนต์
         sendCommentBtn.addEventListener('click', async () => {
             if(!currentUser) return;
             if(!userNickname) {
@@ -1005,13 +1058,11 @@
 
             const text = commentInput.value.trim();
             if(text.length === 0) return;
-
-            // บังคับเคลียร์ช่องทันทีที่กดส่ง (ลดการส่งเบิ้ล)
             commentInput.value = '';
 
             try {
-                const commentsRef = collection(db, 'artifacts', appId, 'public', 'data', `comments_${currentModalStudentId}`);
-                await addDoc(commentsRef, {
+                const commentsRef = ref(db, `artifacts/${appId}/public/data/comments_${currentModalStudentId}`);
+                await push(commentsRef, {
                     uid: currentUser.uid,
                     nickname: userNickname,
                     text: text,
@@ -1022,12 +1073,10 @@
             }
         });
         
-        // กด Enter เพื่อส่งคอมเมนต์
         commentInput.addEventListener('keypress', (e) => {
             if(e.key === 'Enter') sendCommentBtn.click();
         });
 
-        // ปิดหน้าต่าง
         closeModal.addEventListener('click', () => { 
             modalOverlay.classList.remove('active'); 
         });
