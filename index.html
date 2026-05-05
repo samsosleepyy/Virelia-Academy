@@ -19,10 +19,21 @@
             -ms-user-select: none;
         }
 
+        /* คลาสพิเศษอนุญาตให้คัดลอกข้อความได้ */
+        .selectable-text {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -ms-user-select: text !important;
+            cursor: text;
+        }
+
         img {
             -webkit-user-drag: none;
             pointer-events: none; 
         }
+
+        /* อนุญาตให้คลิกโลโก้ได้ (เผื่อปลดล็อคความลับ) */
+        #main-logo { pointer-events: auto; }
 
         .app-wrapper {
             position: fixed;
@@ -413,6 +424,44 @@
         @keyframes toast-in { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 
         /* -------------------------------------------
+           EASTER EGG (SPAMTON & DARK ROOM)
+           ------------------------------------------- */
+        .spamton-img {
+            position: absolute; width: 35px; height: 35px;
+            bottom: 5px; right: 5px; opacity: 0.3; z-index: 50; 
+            cursor: pointer; pointer-events: auto;
+            transition: opacity 0.2s;
+        }
+        .spamton-img:hover { opacity: 1; filter: drop-shadow(0 0 5px yellow); }
+        .spamton-fly {
+            animation: spamton-fly-up 1s ease-in forwards;
+        }
+        @keyframes spamton-fly-up {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg) scale(2); opacity: 0; }
+        }
+
+        #dark-room {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999999; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: #fff; font-family: monospace; font-size: 1.5rem; text-align: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .shake-text {
+            display: inline-block;
+            animation: text-shake 0.1s infinite;
+            margin-bottom: 20px; word-break: break-all; max-width: 800px;
+        }
+        @keyframes text-shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            25% { transform: translate(-1px, -2px) rotate(-1deg); }
+            50% { transform: translate(-3px, 0px) rotate(1deg); }
+            75% { transform: translate(3px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -1px) rotate(1deg); }
+        }
+
+        /* -------------------------------------------
            COLOR THEMES
            ------------------------------------------- */
         .theme-gifted { --theme-color: #FFD700; --theme-glow: rgba(255, 215, 0, 0.3); }
@@ -484,6 +533,7 @@
             <div class="tv-turn-on"></div>
             <div id="logo-mover" class="logo-mover">
                 <div class="glitch-wrapper" id="glitch-wrapper">
+                    <!-- โลโก้คลิกได้แล้ว -->
                     <img src="logo.png" id="main-logo" class="glitch-img" alt="Virelia Logo" onerror="window.handleImageError(this)">
                     <div class="glitch-layer glitch-layer-1"></div>
                     <div class="glitch-layer glitch-layer-2"></div>
@@ -547,10 +597,17 @@
         </div>
     </div>
 
+    <!-- จอมืดแห่งความลับ -->
+    <div id="dark-room" class="selectable-text">
+        <div id="dr-line1" class="shake-text"></div>
+        <div id="dr-line2" class="shake-text"></div>
+    </div>
+
+    <!-- โค้ดส่วนจัดการ Firebase & JavaScript หลัก (เปลี่ยนเป็น type="module") -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, remove, onValue, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         let auth, db, currentUser, appId;
         let userNickname = "";
@@ -559,6 +616,12 @@
         
         let unsubscribeLikes = null;
         let unsubscribeComments = null;
+
+        // ระบบ Easter Eggs
+        let secretSpamtons = [];
+        let foundSpamtons = [];
+        let isLogoActive = false;
+        let logoClicks = 0;
 
         function showToast(message, color = "#ff3333") {
             const toast = document.createElement('div');
@@ -603,7 +666,6 @@
                     if (snap.exists()) {
                         userNickname = snap.val().nickname || "";
                     }
-
                     if (document.getElementById('nav-account').classList.contains('active')) {
                         renderAccountTab();
                     }
@@ -673,6 +735,13 @@
             }
         };
 
+        // สุ่มสถานที่ซ่อน Spamton 5 ตำแหน่ง (เฉพาะตอนเริ่มโหลดหน้าเว็บใหม่)
+        let allStudentIds = [];
+        for (let r in studentDatabase) {
+            studentDatabase[r].students.forEach(s => allStudentIds.push(s.id));
+        }
+        secretSpamtons = allStudentIds.sort(() => 0.5 - Math.random()).slice(0, 5);
+
         function getStudentById(searchId) {
             for (let r in studentDatabase) {
                 let found = studentDatabase[r].students.find(s => s.id === searchId);
@@ -687,6 +756,7 @@
         const btnGlitchWrapper = document.getElementById('btn-glitch-wrapper');
         const logoMover = document.getElementById('logo-mover');
         const logoWrapper = document.getElementById('glitch-wrapper');
+        const mainLogo = document.getElementById('main-logo');
         
         const systemUi = document.getElementById('system-ui');
         const navStudent = document.getElementById('nav-student');
@@ -754,11 +824,11 @@
             navStudent.classList.remove('active');
             navAccount.classList.remove('active');
             subNavRooms.classList.remove('active');
+            // เพิ่มคลาส selectable-text เพื่อให้ก๊อปปี้ข้อความได้
             contentDisplay.innerHTML = `
-                <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
-                    <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY</h2>
-                    <p style="color: #ccc; line-height: 2;">Website by SamSoSleepy<br>CEO Akito<br>👎︎♏︎♋︎⧫︎♒︎ ♓︎⬧︎ ♍︎❒︎♏︎♏︎◻︎♓︎■︎♑︎ ♍︎●︎□︎⬧︎♏︎❒︎📬︎📬︎📬︎<br>
-✋︎⧫︎🕯︎⬧︎ ■︎□︎⧫︎ ⬧︎♋︎♐︎♏︎ ♒︎♏︎❒︎♏︎📬︎</p>
+                <div class="selectable-text" style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
+                    <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
+                    <p style="color: #ccc; line-height: 2;">System Version: 3.2.0<br>Powered by: Firebase Realtime DB<br>Status: SECURE</p>
                 </div>
             `;
         });
@@ -847,6 +917,11 @@
             if(unsubscribeComments) unsubscribeComments();
 
             document.querySelectorAll('.heart-marker').forEach(e => e.remove());
+            
+            // ลบ Spamton ตัวเก่าออกก่อนถ้ามี
+            const oldSpamton = document.querySelector('.spamton-img');
+            if(oldSpamton) oldSpamton.remove();
+
             commentsList.innerHTML = '<p style="color:#666; text-align:center;">กำลังโหลดคอมเมนต์...</p>';
             commentsSection.classList.remove('active');
             modalCommentToggle.classList.remove('active');
@@ -868,6 +943,28 @@
             document.getElementById('m-likes').innerHTML = studentData.likes;
             document.getElementById('m-dislikes').innerHTML = studentData.dislikes;
             document.getElementById('m-identity').innerHTML = studentData.identity;
+
+            // ตรวจสอบและซ่อน Spamton
+            if (secretSpamtons.includes(studentData.id) && !foundSpamtons.includes(studentData.id)) {
+                const spamton = document.createElement('img');
+                spamton.src = 'Spamton.png';
+                spamton.className = 'spamton-img';
+                spamton.onerror = function() { this.src = 'https://i.ibb.co/p6CKpbTh/Spamton-G-Spamton.webp'; };
+                
+                // แปะลงในมุมซ้ายสุดของข้อมูลเพื่อความเนียน
+                document.querySelector('.modal-left').appendChild(spamton);
+
+                spamton.addEventListener('click', function() {
+                    this.classList.add('spamton-fly');
+                    foundSpamtons.push(studentData.id);
+                    
+                    if (foundSpamtons.length === 5) {
+                        isLogoActive = true;
+                        showToast("❓ อะไรบางอย่างในระบบถูกปลดล็อค...", "#00FFFF");
+                    }
+                    setTimeout(() => this.remove(), 1000);
+                }, { once: true });
+            }
 
             modalContent.className = `modal-box ${themeClass}`;
             modalOverlay.classList.add('active');
@@ -978,14 +1075,7 @@
             
             if(commentsSection.classList.contains('active')) {
                 commentsList.scrollTop = commentsList.scrollHeight;
-                
-                // เลื่อนหน้าต่าง (Modal) ลงไปล่างสุดอัตโนมัติ เพื่อให้เห็นช่องพิมพ์คอมเมนต์ชัดเจนในมือถือ
-                setTimeout(() => {
-                    modalContent.scrollTo({
-                        top: modalContent.scrollHeight,
-                        behavior: 'smooth'
-                    });
-                }, 50);
+                setTimeout(() => { modalContent.scrollTo({ top: modalContent.scrollHeight, behavior: 'smooth' }); }, 50);
             }
         });
 
@@ -1012,13 +1102,7 @@
                     timestamp: Date.now()
                 });
                 
-                // เลื่อนหน้าต่างลงมาล่างสุดอีกครั้งหลังจากพิมพ์ส่งเสร็จ
-                setTimeout(() => {
-                    modalContent.scrollTo({
-                        top: modalContent.scrollHeight,
-                        behavior: 'smooth'
-                    });
-                }, 100);
+                setTimeout(() => { modalContent.scrollTo({ top: modalContent.scrollHeight, behavior: 'smooth' }); }, 100);
             } catch (err) {
                 console.error(err);
                 showToast("⚠️ ส่งคอมเมนต์ไม่สำเร็จ (เช็ค Database Rules)");
@@ -1029,14 +1113,63 @@
             if(e.key === 'Enter') sendCommentBtn.click();
         });
 
-        closeModal.addEventListener('click', () => { 
-            modalOverlay.classList.remove('active'); 
-        });
-        modalOverlay.addEventListener('click', (e) => { 
-            if(e.target === modalOverlay) { 
-                modalOverlay.classList.remove('active'); 
+        closeModal.addEventListener('click', () => { modalOverlay.classList.remove('active'); });
+        modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+
+        // ---------------- ระบบคลิกโลโก้แห่งความมืด ----------------
+        mainLogo.addEventListener('click', () => {
+            if (isLogoActive) {
+                logoClicks++;
+                if (logoClicks === 3) {
+                    triggerDarkRoom();
+                }
             }
         });
+
+        function typeText(element, text, speed, callback) {
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        function triggerDarkRoom() {
+            // ปิดทุกอย่างที่แสดงอยู่
+            document.getElementById('main-crt').style.display = 'none';
+            document.getElementById('system-ui').style.display = 'none';
+            
+            // เล่นเสียง (อย่าลืมเอาไฟล์ null.mp3 ลง Github ด้วย)
+            const audio = new Audio('null.mp3');
+            audio.loop = true;
+            audio.play().catch(e => console.log('Audio blocked by browser', e));
+
+            // แสดงห้องมืด
+            const darkRoom = document.getElementById('dark-room');
+            darkRoom.style.display = 'flex';
+            
+            const line1 = "☞︎♓︎■︎♋︎●︎●︎⍓︎📬︎📬︎📬︎ 💧︎♒︎♋︎●︎●︎ ⬥︎♏︎ ♌︎♏︎♑︎♓︎■︎✍︎";
+            const line2 = "☹︎💧︎📁︎♑︎☹︎💧︎🗐︎⧫︎✋︎👍︎🗐︎◆︎☹︎💧︎🗐︎♑︎☹︎💧︎✌︎⧫︎☹︎♓︎🗐︎♑︎☹︎♓︎📁︎⧫︎☹︎💧︎📁︎♑︎☹︎💧︎🗐︎◆︎☹︎♓︎✌︎◆︎☹︎💧︎🗐︎◆︎✋︎👍︎📁︎◆︎☹︎♓︎✌︎◆︎☹︎♓︎🗐︎⧫︎✋︎👍︎🗐︎◆︎✋︎👍︎🗐︎◆︎☹︎♓︎🗐︎◆︎✋︎👍︎📁︎♑︎☹︎💧︎📁︎◆︎✋︎👍︎📁︎◆︎☹︎♓︎🗐︎⧫︎✋︎👍︎📁︎◆︎☹︎♓︎🗐︎⧫︎";
+            
+            // เริ่มพิมพ์ข้อความหลอนๆ
+            setTimeout(() => {
+                typeText(document.getElementById('dr-line1'), line1, 100, () => {
+                    setTimeout(() => {
+                        typeText(document.getElementById('dr-line2'), line2, 50, () => {
+                            // หลังจากแสดงครบ 1 นาที ให้ทำการรีเฟรชหน้าเว็บกลับเป็นปกติ
+                            setTimeout(() => { location.reload(); }, 60000);
+                        });
+                    }, 1000);
+                });
+            }, 1000);
+        }
+
     </script>
 </body>
 </html>
