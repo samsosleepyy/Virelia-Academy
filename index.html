@@ -404,7 +404,8 @@
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.9); border: 1px solid #ff3333; color: #fff;
             padding: 10px 25px; border-radius: 5px; font-family: inherit; font-weight: bold;
-            z-index: 9999; box-shadow: 0 0 15px rgba(255,51,51,0.5);
+            z-index: 99999; /* เปลี่ยนให้ z-index สูงที่สุด เพื่อไม่ให้โดนอะไรบัง */
+            box-shadow: 0 0 15px rgba(255,51,51,0.5);
             animation: toast-in 0.3s ease-out;
         }
         @keyframes toast-in { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
@@ -562,14 +563,12 @@
         let userNickname = "";
         let currentModalStudentId = null;
         let isLikingMode = false;
-        let userFavorites = [];
         
         // ตัวแปรสำหรับยกเลิกการดึงข้อมูลเมื่อปิดหน้าต่าง
         let unsubscribeLikes = null;
         let unsubscribeComments = null;
-        let unsubscribeFavs = null;
 
-        // ระบบแจ้งเตือนแทน Alert
+        // ระบบแจ้งเตือนแทน Alert (ปรับ z-index ใน css แล้ว)
         function showToast(message, color = "#ff3333") {
             const toast = document.createElement('div');
             toast.className = 'toast-msg';
@@ -595,7 +594,7 @@
             authDomain: "moonweb-5b0c3.firebaseapp.com",
             databaseURL: "https://moonweb-5b0c3-default-rtdb.asia-southeast1.firebasedatabase.app", // <-- ต้องใส่บรรทัดนี้
             projectId: "moonweb-5b0c3",
-            storageBucket: "moonweb-5b0c3.firebasestorage.app",
+            storageBucket: "moonweb-5b0c3.appspot.com",
             messagingSenderId: "861255069945",
             appId: "1:861255069945:web:35a1e808888132d3fcb228"
         };
@@ -620,22 +619,6 @@
                     if (snap.exists()) {
                         userNickname = snap.val().nickname || "";
                     }
-
-                    // สร้าง Listener สำหรับ Favorites
-                    const favRef = ref(db, `artifacts/${appId}/users/${user.uid}/favorites`);
-                    unsubscribeFavs = onValue(favRef, (snapshot) => {
-                        userFavorites = [];
-                        snapshot.forEach((childSnapshot) => {
-                            userFavorites.push(childSnapshot.key);
-                        });
-                        updateModalFavBtnUI(); 
-                        
-                        if (document.getElementById('nav-account').classList.contains('active')) {
-                            renderAccountTab();
-                        }
-                    }, (error) => {
-                        console.error("Error Fetching Data:", error);
-                    });
 
                     if (document.getElementById('nav-account').classList.contains('active')) {
                         renderAccountTab();
@@ -732,7 +715,6 @@
         const modalOverlay = document.getElementById('detail-modal');
         const modalContent = document.getElementById('modal-content');
         const closeModal = document.getElementById('close-modal');
-        const modalFavBtn = document.getElementById('modal-fav-btn');
         
         const modalImgWrapper = document.getElementById('m-img-wrapper');
         const modalLikeBtn = document.getElementById('modal-like-btn');
@@ -808,7 +790,6 @@
                         <input type="text" id="nickname-input" placeholder="กรอกชื่อเล่นของคุณ..." value="${userNickname}">
                         <button id="save-nickname-btn">บันทึกชื่อเล่น</button>
                     </div>
-                    <h3 style="color: #fff; margin-top: 30px;">นักเรียนที่คุณบันทึกไว้ (FAVORITES)</h3>
                 </div>
             `;
             
@@ -823,39 +804,13 @@
                     return;
                 }
                 try {
-                    // บันทึกชื่อเล่นลง Realtime Database
                     await set(ref(db, `artifacts/${appId}/users/${currentUser.uid}/profile/info`), { nickname: newName });
-                    userNickname = newName; // อัปเดตตัวแปรทันที
+                    userNickname = newName; 
                     showToast("✅ บันทึกชื่อเล่นสำเร็จ! คุณสามารถกดชอบและคอมเมนต์ได้แล้ว", "#00FF00");
                 } catch (e) {
                     console.error(e);
                     showToast("⚠️ เกิดข้อผิดพลาดในการบันทึกชื่อเล่น (เช็ค Database Rules)");
                 }
-            });
-
-            if (userFavorites.length === 0) {
-                contentDisplay.innerHTML += `<p style="color:#aaa; font-style:italic; width: 100%; text-align: center;">ยังไม่มีข้อมูลที่คุณบันทึกไว้...</p>`;
-                return;
-            }
-
-            userFavorites.forEach((favId, index) => {
-                const data = getStudentById(favId);
-                if (!data) return;
-                
-                const card = document.createElement('div');
-                card.className = `profile-card ${data.theme}`;
-                card.style.animationDelay = `${index * 0.1}s`; 
-                card.innerHTML = `
-                    <div class="profile-img-container">
-                        <img src="${data.student.img}" class="profile-img" alt="${data.student.name}" onerror="this.onerror=null; this.src='https://placehold.co/300x400/222/555?text=NO+IMAGE';">
-                    </div>
-                    <div class="profile-name">${data.student.name}</div>
-                    <button class="detail-btn">รายละเอียด</button>
-                `;
-                card.querySelector('.detail-btn').addEventListener('click', () => {
-                    openModal(data.student, data.theme, data.roomName);
-                });
-                contentDisplay.appendChild(card);
             });
         }
 
@@ -898,17 +853,6 @@
             });
         });
 
-        function updateModalFavBtnUI() {
-            if (!currentModalStudentId || !modalFavBtn) return;
-            if (userFavorites.includes(currentModalStudentId)) {
-                modalFavBtn.classList.add('active');
-                modalFavBtn.textContent = '★ บันทึกข้อมูลแล้ว (ยกเลิก)';
-            } else {
-                modalFavBtn.classList.remove('active');
-                modalFavBtn.textContent = '⭐ บันทึกข้อมูล';
-            }
-        }
-
         function openModal(studentData, themeClass, roomNameStr) {
             currentModalStudentId = studentData.id;
             isLikingMode = false;
@@ -941,7 +885,6 @@
             document.getElementById('m-identity').innerHTML = studentData.identity;
 
             modalContent.className = `modal-box ${themeClass}`;
-            updateModalFavBtnUI();
             modalOverlay.classList.add('active');
 
             if(currentUser && db) {
@@ -987,20 +930,6 @@
                 }, error => console.error(error));
             }
         }
-
-        modalFavBtn.addEventListener('click', async () => {
-            if (!currentUser) return;
-            const docRef = ref(db, `artifacts/${appId}/users/${currentUser.uid}/favorites/${currentModalStudentId}`);
-            try {
-                if (userFavorites.includes(currentModalStudentId)) {
-                    await remove(docRef);
-                } else {
-                    await set(docRef, { savedAt: Date.now() });
-                }
-            } catch (error) {
-                console.error("Firebase Database Error:", error);
-            }
-        });
 
         modalLikeBtn.addEventListener('click', () => {
             if(!currentUser) {
@@ -1095,65 +1024,6 @@
             }
         });
 
-        document.getElementById('m-img').addEventListener('click', async (e) => {
-            if(!isLikingMode || !currentUser) return;
-
-            const rect = e.target.getBoundingClientRect();
-            const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
-            const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
-
-            try {
-                const likesRef = ref(db, `artifacts/${appId}/public/data/likes_${currentModalStudentId}`);
-                await push(likesRef, {
-                    uid: currentUser.uid,
-                    nickname: userNickname,
-                    x: xPercent,
-                    y: yPercent,
-                    timestamp: Date.now()
-                });
-                
-                showToast("❤️ แปะหัวใจสำเร็จ!", "#ff3333");
-            } catch (err) {
-                showToast("⚠️ เกิดข้อผิดพลาด ไม่สามารถส่งข้อมูลได้");
-            }
-
-            isLikingMode = false;
-            modalLikeBtn.classList.remove('active');
-            modalImgWrapper.classList.remove('liking-mode');
-        });
-
-        modalCommentToggle.addEventListener('click', () => {
-            commentsSection.classList.toggle('active');
-            modalCommentToggle.classList.toggle('active');
-            if(commentsSection.classList.contains('active')) {
-                commentsList.scrollTop = commentsList.scrollHeight;
-            }
-        });
-
-        sendCommentBtn.addEventListener('click', async () => {
-            if(!currentUser) return;
-            if(!userNickname) {
-                showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนคอมเมนต์");
-                return;
-            }
-
-            const text = commentInput.value.trim();
-            if(text.length === 0) return;
-            commentInput.value = '';
-
-            try {
-                const commentsRef = ref(db, `artifacts/${appId}/public/data/comments_${currentModalStudentId}`);
-                await push(commentsRef, {
-                    uid: currentUser.uid,
-                    nickname: userNickname,
-                    text: text,
-                    timestamp: Date.now()
-                });
-            } catch (err) {
-                showToast("⚠️ ส่งคอมเมนต์ไม่สำเร็จ");
-            }
-        });
-        
         commentInput.addEventListener('keypress', (e) => {
             if(e.key === 'Enter') sendCommentBtn.click();
         });
