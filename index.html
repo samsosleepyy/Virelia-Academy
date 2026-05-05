@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virelia Academy - Database System</title>
+    <title>Virelia Academy</title>
     <style>
         /* รีเซ็ตค่าพื้นฐาน */
         body, html {
@@ -1141,33 +1141,34 @@
         }
 
         function triggerDarkRoom() {
-            // ปิดทุกอย่างที่แสดงอยู่
+            // ปิดทุกอย่างที่แสดงอยู่ให้จอดำมืดสนิท
             document.getElementById('main-crt').style.display = 'none';
             document.getElementById('system-ui').style.display = 'none';
             
-            // เล่นเสียง (อย่าลืมเอาไฟล์ null.mp3 ลง Github ด้วย)
+            // เล่นเสียงหลอนๆ (ถ้าผู้ใช้อนุญาตให้เล่น)
             const audio = new Audio('null.mp3');
             audio.loop = true;
             audio.play().catch(e => console.log('Audio blocked by browser', e));
 
-            // แสดงห้องมืด
             const darkRoom = document.getElementById('dark-room');
             darkRoom.style.display = 'flex';
             
             const line1 = "☞︎♓︎■︎♋︎●︎●︎⍓︎📬︎📬︎📬︎ 💧︎♒︎♋︎●︎●︎ ⬥︎♏︎ ♌︎♏︎♑︎♓︎■︎✍︎";
             const line2 = "☹︎💧︎📁︎♑︎☹︎💧︎🗐︎⧫︎✋︎👍︎🗐︎◆︎☹︎💧︎🗐︎♑︎☹︎💧︎✌︎⧫︎☹︎♓︎🗐︎♑︎☹︎♓︎📁︎⧫︎☹︎💧︎📁︎♑︎☹︎💧︎🗐︎◆︎☹︎♓︎✌︎◆︎☹︎💧︎🗐︎◆︎✋︎👍︎📁︎◆︎☹︎♓︎✌︎◆︎☹︎♓︎🗐︎⧫︎✋︎👍︎🗐︎◆︎✋︎👍︎🗐︎◆︎☹︎♓︎🗐︎◆︎✋︎👍︎📁︎♑︎☹︎💧︎📁︎◆︎✋︎👍︎📁︎◆︎☹︎♓︎🗐︎⧫︎✋︎👍︎📁︎◆︎☹︎♓︎🗐︎⧫︎";
             
-            // เริ่มพิมพ์ข้อความหลอนๆ
+            
             setTimeout(() => {
+                // หลังจากรอมา 5 นาทีเต็ม ถึงจะเริ่มพิมพ์ข้อความ
                 typeText(document.getElementById('dr-line1'), line1, 100, () => {
                     setTimeout(() => {
                         typeText(document.getElementById('dr-line2'), line2, 50, () => {
-                            // หลังจากแสดงครบ 1 นาที ให้ทำการรีเฟรชหน้าเว็บกลับเป็นปกติ
+                            // หลังจากข้อความพิมพ์เสร็จ ปล่อยค้างไว้ให้ก๊อปปี้อีก 1 นาที (60,000 มิลลิวินาที) ค่อยรีเฟรช 
+                            // รวมระยะเวลาทั้งหมดที่ขังไว้คือประมาณ 6 นาที
                             setTimeout(() => { location.reload(); }, 60000);
                         });
                     }, 1000);
                 });
-            }, 1000);
+            }, 300000); 
         }
 
     </script>
