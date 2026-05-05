@@ -595,7 +595,7 @@
             authDomain: "moonweb-5b0c3.firebaseapp.com",
             databaseURL: "https://moonweb-5b0c3-default-rtdb.asia-southeast1.firebasedatabase.app", // <-- ต้องใส่บรรทัดนี้
             projectId: "moonweb-5b0c3",
-            storageBucket: "moonweb-5b0c3.appspot.com",
+            storageBucket: "moonweb-5b0c3.firebasestorage.app",
             messagingSenderId: "861255069945",
             appId: "1:861255069945:web:35a1e808888132d3fcb228"
         };
@@ -813,18 +813,23 @@
             `;
             
             document.getElementById('save-nickname-btn').addEventListener('click', async () => {
-                if (!currentUser) return;
+                if (!currentUser) {
+                     showToast("⚠️ ไม่สามารถบันทึกได้ กรุณาตรวจสอบการเชื่อมต่อฐานข้อมูล");
+                     return;
+                }
                 const newName = document.getElementById('nickname-input').value.trim();
                 if (newName.length < 2) {
                     showToast("⚠️ ชื่อเล่นต้องมีอย่างน้อย 2 ตัวอักษร");
                     return;
                 }
                 try {
+                    // บันทึกชื่อเล่นลง Realtime Database
                     await set(ref(db, `artifacts/${appId}/users/${currentUser.uid}/profile/info`), { nickname: newName });
-                    userNickname = newName;
-                    showToast("✅ บันทึกชื่อเล่นสำเร็จ!", "#00FF00");
+                    userNickname = newName; // อัปเดตตัวแปรทันที
+                    showToast("✅ บันทึกชื่อเล่นสำเร็จ! คุณสามารถกดชอบและคอมเมนต์ได้แล้ว", "#00FF00");
                 } catch (e) {
-                    showToast("⚠️ เกิดข้อผิดพลาดในการบันทึก");
+                    console.error(e);
+                    showToast("⚠️ เกิดข้อผิดพลาดในการบันทึกชื่อเล่น (เช็ค Database Rules)");
                 }
             });
 
@@ -998,7 +1003,11 @@
         });
 
         modalLikeBtn.addEventListener('click', () => {
-            if(!userNickname) {
+            if(!currentUser) {
+                showToast("⚠️ ระบบบัญชียังไม่ออนไลน์ ไม่สามารถทำรายการได้");
+                return;
+            }
+            if(!userNickname || userNickname.trim() === "") {
                 showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนกดชอบ");
                 return;
             }
@@ -1011,6 +1020,78 @@
                 isLikingMode = false;
                 modalLikeBtn.classList.remove('active');
                 modalImgWrapper.classList.remove('liking-mode');
+            }
+        });
+
+        document.getElementById('m-img').addEventListener('click', async (e) => {
+            if(!isLikingMode || !currentUser) return;
+            
+            if(!userNickname || userNickname.trim() === "") {
+                showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อน");
+                isLikingMode = false;
+                modalLikeBtn.classList.remove('active');
+                modalImgWrapper.classList.remove('liking-mode');
+                return;
+            }
+
+            const rect = e.target.getBoundingClientRect();
+            const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+            const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+
+            try {
+                const likesRef = ref(db, `artifacts/${appId}/public/data/likes_${currentModalStudentId}`);
+                await push(likesRef, {
+                    uid: currentUser.uid,
+                    nickname: userNickname,
+                    x: xPercent,
+                    y: yPercent,
+                    timestamp: Date.now()
+                });
+                
+                showToast("❤️ แปะหัวใจสำเร็จ!", "#ff3333");
+            } catch (err) {
+                console.error(err);
+                showToast("⚠️ เกิดข้อผิดพลาด ไม่สามารถส่งข้อมูลได้ (เช็ค Database Rules)");
+            }
+
+            isLikingMode = false;
+            modalLikeBtn.classList.remove('active');
+            modalImgWrapper.classList.remove('liking-mode');
+        });
+
+        modalCommentToggle.addEventListener('click', () => {
+            commentsSection.classList.toggle('active');
+            modalCommentToggle.classList.toggle('active');
+            if(commentsSection.classList.contains('active')) {
+                commentsList.scrollTop = commentsList.scrollHeight;
+            }
+        });
+
+        sendCommentBtn.addEventListener('click', async () => {
+            if(!currentUser) {
+                 showToast("⚠️ ระบบบัญชียังไม่ออนไลน์");
+                 return;
+            }
+            if(!userNickname || userNickname.trim() === "") {
+                showToast("⚠️ โปรดตั้งชื่อเล่นในเมนู 'บัญชีผู้ใช้' ก่อนคอมเมนต์");
+                return;
+            }
+
+            const text = commentInput.value.trim();
+            if(text.length === 0) return;
+            commentInput.value = '';
+
+            try {
+                const commentsRef = ref(db, `artifacts/${appId}/public/data/comments_${currentModalStudentId}`);
+                await push(commentsRef, {
+                    uid: currentUser.uid,
+                    nickname: userNickname,
+                    text: text,
+                    timestamp: Date.now()
+                });
+            } catch (err) {
+                console.error(err);
+                showToast("⚠️ ส่งคอมเมนต์ไม่สำเร็จ (เช็ค Database Rules)");
             }
         });
 
