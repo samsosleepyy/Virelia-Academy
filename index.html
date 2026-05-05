@@ -139,6 +139,7 @@
             z-index: 50;
             opacity: 0; 
             animation: show-logo 0.5s 0.8s forwards;
+            pointer-events: none; /* แก้ไข: สั่งให้ทะลุการคลิก เพื่อไม่ให้กล่องใสของโลโก้ไปบังปุ่ม */
         }
         @keyframes show-logo { to { opacity: 1; } }
 
@@ -202,6 +203,7 @@
             display: flex; justify-content: flex-end; gap: 20px; flex-wrap: wrap; 
             padding-bottom: 20px; border-bottom: 1px solid rgba(255, 51, 51, 0.3);
             margin-left: 100px; flex-shrink: 0; 
+            position: relative; z-index: 20; /* แก้ไข: ยกแถบเมนูขึ้นชั้นบนสุดกันโดนเนื้อหาข้างล่างบัง */
         }
 
         .nav-btn {
@@ -224,6 +226,7 @@
             display: flex; justify-content: flex-end; gap: 15px; flex-wrap: wrap; 
             padding: 0; max-height: 0; overflow: hidden; opacity: 0; 
             transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease; flex-shrink: 0; 
+            position: relative; z-index: 10; /* แก้ไข: ยกแถบห้องขึ้นชั้นรองลงมาเพื่อไม่ให้โดนการ์ดข้างล่างบัง */
         }
         .sub-bar.active { 
             max-height: 400px; opacity: 1; padding: 15px 0; overflow: visible; 
@@ -244,6 +247,7 @@
             flex-grow: 1; margin-top: 20px; overflow-y: auto;
             display: flex; justify-content: center; align-items: flex-start; gap: 40px;
             flex-wrap: wrap; padding: 20px; scrollbar-width: thin; scrollbar-color: #ff3333 #000;
+            position: relative; z-index: 1; /* ส่งลงเลเยอร์ล่างสุดในกลุ่ม */
         }
         .content-area::-webkit-scrollbar { width: 8px; }
         .content-area::-webkit-scrollbar-track { background: #000; }
@@ -772,8 +776,8 @@
             subNavRooms.classList.remove('active');
             contentDisplay.innerHTML = `
                 <div style="text-align:center; padding: 50px; background: rgba(0,0,0,0.7); border: 1px solid #ff3333; max-width: 600px; margin-top: 50px; box-shadow: 0 0 20px rgba(255,51,51,0.2);">
-                    <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY</h2>
-                    <p style="color: #ccc; line-height: 2;">Website by SamSoSleepy<br>CEO Akito<br>!</p>
+                    <h2 style="color: #ff3333; letter-spacing: 5px;">VIRELIA ACADEMY DATABASE</h2>
+                    <p style="color: #ccc; line-height: 2;">System Version: 3.1.0<br>Powered by: Firebase Realtime DB<br>Status: SECURE</p>
                 </div>
             `;
         });
